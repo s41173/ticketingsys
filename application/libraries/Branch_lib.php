@@ -51,7 +51,7 @@ class Branch_lib extends Main_model {
             $this->db->select($this->field);
             $this->db->where('id', $id);
             $val = $this->db->get($this->tableName)->row();
-            if ($val){ return $val->code; }
+            if ($val){ return $val->code; }else{ return null; } 
         }
         else { return ''; }
     }

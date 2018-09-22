@@ -53,7 +53,7 @@ class City_lib extends Main_model {
         $data['options'][""] = " -- Pilih Wilayah -- ";
         foreach ($datax['rajaongkir']['results'] as $row)
         {$data[$row['province']] = $row['province'];}
-        return $data;
+        return @$data;
     }
     
     function combo_city()

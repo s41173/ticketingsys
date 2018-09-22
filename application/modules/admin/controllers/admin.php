@@ -63,7 +63,7 @@ class Admin extends MX_Controller
         $data['form_action_del'] = site_url($this->title.'/delete_all');
         $data['link'] = array('link_back' => anchor('main/','Back', array('class' => 'btn btn-danger')));
 
-        $data['city'] = $this->city->combo_province();
+        $data['city'] = $this->city->combo_city_db();
         $data['roles'] = $this->role->combo();
         $data['branch'] = $this->branch->combo_all();
 	// ---------------------------------------- //
@@ -79,7 +79,6 @@ class Admin extends MX_Controller
 
         $this->table->set_template($tmpl);
         $this->table->set_empty("&nbsp;");
-
         //Set heading untuk table
         $this->table->set_heading('#','No', 'Branch', 'Username', 'E-mail', 'Role', 'Status', 'Action');
 
@@ -147,7 +146,7 @@ class Admin extends MX_Controller
             $this->form_validation->set_rules('tname', 'Name', 'required');
             $this->form_validation->set_rules('taddress', 'Address', 'required');
             $this->form_validation->set_rules('tphone', 'Phone', 'required|numeric');
-            $this->form_validation->set_rules('ccity', 'City', 'required');
+            $this->form_validation->set_rules('ccity', 'City');
             $this->form_validation->set_rules('tmail', 'Email', 'required|valid_email');
             $this->form_validation->set_rules('crole', 'Role', 'required');
             $this->form_validation->set_rules('tid', 'Yahoo Id', '');

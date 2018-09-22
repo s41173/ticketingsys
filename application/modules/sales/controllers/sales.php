@@ -219,6 +219,7 @@ class Sales extends MX_Controller
         $data['account'] = $this->account->combo_asset();
         $data['airport'] = $this->airport->combo();
         $data['airline'] = $this->airline->combo();
+        
         $data['tax'] = $this->tax->combo();
         $data['payment'] = $this->payment->combo();
         $data['source'] = site_url($this->title.'/getdatatable');
@@ -227,7 +228,7 @@ class Sales extends MX_Controller
         $data['default']['dates'] = date("Y/m/d");
         $data['code'] = '0'.$data['counter'].date('dnyHi');
         
-        $data['items'] = $this->sitem->get_last_item(0)->result();
+        $data['items'] = null;
 
         $this->load->view('template', $data);
     }
