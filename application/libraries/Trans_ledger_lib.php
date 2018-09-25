@@ -1,25 +1,23 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Trans_ledger_lib {
+class Trans_ledger_lib extends Custom_Model {
 
-    public function __construct()
+    public function __construct($deleted=NULL)
     {
-        $this->ci = & get_instance();
+        $this->deleted = $deleted;
+        $this->tableName = 'trans_ledger';
     }
-
-    private $ci;
-    private $table = 'trans_ledger';
 
 
     private function cek($code, $no, $cur, $date, $type)
     {
-//       $this->ci->db->where('acc', $acc);
-       $this->ci->db->where('dates', $date);
-       $this->ci->db->where('code', $code);
-       $this->ci->db->where('no', $no);
-       $this->ci->db->where('currency', $cur);
-       $this->ci->db->where('type', $type);
-       $res = $this->ci->db->get($this->table)->num_rows();
+//       $this->db->where('acc', $acc);
+       $this->db->where('dates', $date);
+       $this->db->where('code', $code);
+       $this->db->where('no', $no);
+       $this->db->where('currency', $cur);
+       $this->db->where('type', $type);
+       $res = $this->db->get($this->tableName)->num_rows();
        if ($res > 0){ return FALSE; }else { return TRUE; }
     }
     
@@ -30,7 +28,7 @@ class Trans_ledger_lib {
           $vamount = intval($debit-$credit);
           $trans = array('acc' => $acc, 'code' => $code, 'no' => $no, 'currency' => $cur, 'dates' => $date, 'type' => $type, 
                          'debit' => intval($debit), 'credit' => intval($credit), 'vamount' => $vamount, 'customer_id' => $cust);
-          $this->ci->db->insert($this->table, $trans); 
+          $this->db->insert($this->tableName, $trans); 
         }
         else { $this->edit($acc, $code, $no, $cur, $date, $debit, $credit, $cust, $type); }   
     }
@@ -42,18 +40,18 @@ class Trans_ledger_lib {
         $vamount = intval($debit-$credit);
         $trans = array('acc' => $acc, 'code' => $code, 'no' => $no, 'currency' => $cur, 'dates' => $date, 'debit' => $debit, 'credit' => $credit, 
                        'type' => $type, 'vamount' => $vamount, 'customer_id' => $cust);
-        $this->ci->db->where('id', $id);
-        $this->ci->db->update($this->table, $trans);
+        $this->db->where('id', $id);
+        $this->db->update($this->tableName, $trans);
     }
     
     private function get_id($acc, $code, $no, $cur='IDR', $date)
     {
-//       $this->ci->db->where('acc', $acc);
-       $this->ci->db->where('dates', $date);
-       $this->ci->db->where('code', $code);
-       $this->ci->db->where('no', $no);
-       $this->ci->db->where('currency', $cur);
-       $res = $this->ci->db->get($this->table)->row();
+//       $this->db->where('acc', $acc);
+       $this->db->where('dates', $date);
+       $this->db->where('code', $code);
+       $this->db->where('no', $no);
+       $this->db->where('currency', $cur);
+       $res = $this->db->get($this->tableName)->row();
        return $res->id;
     }
 
@@ -62,145 +60,134 @@ class Trans_ledger_lib {
     function remove($dates,$codetrans,$no)
     {
         // ============ update transaction ===================
-        $this->ci->db->where('dates', $dates);
-        $this->ci->db->where('code', $codetrans);
-        $this->ci->db->where('no', $no);
-        $this->ci->db->delete($this->table);
+        $this->db->where('dates', $dates);
+        $this->db->where('code', $codetrans);
+        $this->db->where('no', $no);
+        $this->db->delete($this->tableName);
         // ====================================================
-    }
-    
-    private function cek_null($val,$field)
-    {
-        if ($val == ""){return null;}
-        else {return $this->ci->db->where($field, $val);}
     }
       
     function get_transaction($acc, $cur, $start,$end, $cust, $type, $trans=null)
     {
-        $this->ci->db->select('id, code, no, acc, currency, dates, debit, credit, vamount');
+        $this->db->select('id, code, no, acc, currency, dates, debit, credit, vamount');
         
-        if ($trans=='SO')
-        {
-          $this->ci->db->where('code', 'SO');
-          $this->ci->db->where('code', 'CR'); 
-        }
-        elseif ($trans == 'NSO')
-        {
-          $this->ci->db->where('code', 'NSO');
-          $this->ci->db->where('code', 'NCR');   
-        }
+//        if ($trans=='SO')
+//        {
+//          $this->db->where('code', 'SO');
+//          $this->db->where('code', 'CR'); 
+//        }
         
         $this->cek_null($acc, 'acc');
-        $this->ci->db->where('currency', $cur);
-        $this->ci->db->where('customer_id', $cust);
-        $this->ci->db->where('type', $type);
-        $this->ci->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
-        $this->ci->db->order_by('dates','asc');
-        $this->ci->db->order_by('id','asc');
-        return $this->ci->db->get($this->table);
+        $this->db->where('currency', $cur);
+        $this->db->where('customer_id', $cust);
+        $this->db->where('type', $type);
+        $this->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
+        $this->db->order_by('dates','asc');
+        $this->db->order_by('id','asc');
+        return $this->db->get($this->tableName);
     }
     
     function get_sum_transaction_open_balance($acc,$cur,$start,$cust, $type, $trans=null)
     {
-        $this->ci->db->select_sum('vamount');
+        $this->db->select_sum('vamount');
         
         if ($trans=='SO')
         {
-          $this->ci->db->where('code', 'SO');
-          $this->ci->db->where('code', 'CR'); 
-        }
-        elseif ($trans == 'NSO')
-        {
-          $this->ci->db->where('code', 'NSO');
-          $this->ci->db->where('code', 'NCR');   
+          $this->db->where('code', 'SO');
+          $this->db->where('code', 'CR'); 
         }
         
-        $this->ci->db->where('acc', $acc);
-        $this->ci->db->where('currency', $cur);
-        $this->ci->db->where('customer_id', $cust);
-        $this->ci->db->where('type', $type);
-        $this->ci->db->where('dates <', $start);
-        $res = $this->ci->db->get($this->table)->row_array();
+        $this->db->where('acc', $acc);
+        $this->db->where('currency', $cur);
+        $this->db->where('customer_id', $cust);
+        $this->db->where('type', $type);
+        $this->db->where('dates <', $start);
+        $res = $this->db->get($this->tableName)->row_array();
         return intval($res['vamount']);
     }
      
      // closing function
     function get_sum_transaction_balance($acc, $cur, $start,$end,$cust,$type, $trans=null)
     {
-        $this->ci->db->select_sum('debit');
-        $this->ci->db->select_sum('credit');
-        $this->ci->db->select_sum('vamount');
+        $this->db->select_sum('debit');
+        $this->db->select_sum('credit');
+        $this->db->select_sum('vamount');
         
-        if ($trans=='SO')
-        {
-          $this->ci->db->where('code', 'SO');
-          $this->ci->db->where('code', 'CR'); 
-        }
-        elseif ($trans == 'NSO')
-        {
-          $this->ci->db->where('code', 'NSO');
-          $this->ci->db->where('code', 'NCR');   
-        }
+//        if ($trans=='SO')
+//        {
+//          $this->db->where('code', 'SO');
+//          $this->db->where('code', 'CR'); 
+//        }
         
-        $this->ci->db->where('acc', $acc);
-        $this->ci->db->where('currency', $cur);
-        $this->ci->db->where('customer_id', $cust);
-        $this->ci->db->where('type', $type);
-        $this->ci->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
-        $res = $this->ci->db->get($this->table)->row_array();
+        $this->db->where('acc', $acc);
+        $this->db->where('currency', $cur);
+        $this->db->where('customer_id', $cust);
+        $this->db->where('type', $type);
+        $this->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
+        $res = $this->db->get($this->tableName)->row_array();
         return $res;
     }
-    
-    
+       
     // AP report get
     
-          
-    function get_transaction_ap($acc=null, $cur, $start,$end, $cust, $type)
+    function get_transaction_ap($acc, $cur, $start,$end, $cust, $type, $trans='PO')
     {
-        $this->ci->db->select('id, code, no, acc, currency, dates, debit, credit, vamount');
+        $this->db->select('id, code, no, acc, currency, dates, debit, credit, vamount');
         $this->cek_null($acc, 'acc');
         
-        $this->ci->db->where('currency', $cur);
-        $this->ci->db->where('customer_id', $cust);
-        $this->ci->db->where('type', $type);
-        $this->ci->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
-        $this->ci->db->order_by('dates','asc');
-        $this->ci->db->order_by('id','asc');
-        return $this->ci->db->get($this->table);
+//        if ($trans)
+//        {
+//          $this->db->where('code', $trans);
+//          $this->db->where('code', 'CD'); 
+//        }
+        
+        $this->db->where('currency', $cur);
+        $this->db->where('customer_id', $cust);
+        $this->db->where('type', $type);
+        $this->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
+        $this->db->order_by('dates','asc');
+        $this->db->order_by('id','asc');
+        return $this->db->get($this->tableName);
     }
     
-    function get_sum_transaction_open_balance_ap($acc=null,$cur,$start,$cust, $type, $trans=null)
+    function get_sum_transaction_open_balance_ap($acc,$cur,$start,$cust, $type, $trans='PO')
     {
-        $this->ci->db->select_sum('vamount');
+        $this->db->select_sum('vamount');
         
-        $this->cek_null($acc, 'acc');
-        $this->ci->db->where('currency', $cur);
-        $this->ci->db->where('customer_id', $cust);
-        $this->ci->db->where('type', $type);
-        $this->ci->db->where('dates <', $start);
-        $res = $this->ci->db->get($this->table)->row_array();
+//        if ($trans)
+//        {
+//          $this->db->where('code', $trans);
+//          $this->db->where('codes', 'CD'); 
+//        }
+        
+        $this->db->where('acc', $acc);
+        $this->db->where('currency', $cur);
+        $this->db->where('customer_id', $cust);
+        $this->db->where('type', $type);
+        $this->db->where('dates <', $start);
+        $res = $this->db->get($this->tableName)->row_array();
         return intval($res['vamount']);
     }
      
      // closing function
     function get_sum_transaction_balance_ap($acc, $cur, $start,$end,$cust,$type,$trans=null)
     {
-        $this->ci->db->select_sum('debit');
-        $this->ci->db->select_sum('credit');
-        $this->ci->db->select_sum('vamount');
+        $this->db->select_sum('debit');
+        $this->db->select_sum('credit');
+        $this->db->select_sum('vamount');
         
         if ($trans)
         {
-          $this->ci->db->where('code', $trans);
-          $this->ci->db->where('code', 'CD'); 
+          $this->db->where('code', $trans);
+          $this->db->where('code', 'CD'); 
         }
         
-        $this->cek_null($acc, 'acc');
-        $this->ci->db->where('currency', $cur);
-        $this->ci->db->where('customer_id', $cust);
-        $this->ci->db->where('type', $type);
-        $this->ci->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
-        $res = $this->ci->db->get($this->table)->row_array();
+        $this->db->where('acc', $acc);
+        $this->db->where('currency', $cur);
+        $this->db->where('customer_id', $cust);
+        $this->db->where('type', $type);
+        $this->db->where("dates BETWEEN '".setnull($start)."' AND '".setnull($end)."'");
+        $res = $this->db->get($this->tableName)->row_array();
         return $res;
     }
     

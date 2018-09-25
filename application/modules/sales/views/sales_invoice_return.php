@@ -76,7 +76,7 @@
 		<table class="product">
 
 		 <tr> 
-<th> No </th> <th> Passenger </th> <th> Booking Code </th> <th> Routing </th> <th> Ticket No </th>
+<th> No </th> <th> Passenger </th> <th> Booking Code </th> <th> Routing </th> <th> Return </th> <th> Ticket No </th>
 <th> Amount </th>
 		 </tr>
 		 
@@ -111,6 +111,7 @@
 						<td> ".$res->bookcode." </td>
 <td class=\"left\">".airport($res->source).' - '.airport($res->destination)." <br> ".tglin($res->dates).' '.
 timein($res->dates)."  ".$res->source_desc."</td>
+                        <td> ".returns($res->return_dates)." </td>
                         <td> ".$res->ticketno." </td> 
 						<td class=\"right\"> ".number_format($res->amount).",- </td>   
 					 </tr>
@@ -121,8 +122,8 @@ timein($res->dates)."  ".$res->source_desc."</td>
 			
 		 ?>
 		 
-		 <tr> <td class="right" colspan="5"> Landed Cost : </td> <td class="right"> <?php echo number_format($cost); ?>,- </td> </tr>
-<tr> <td colspan="5" class="right"> <b> Total : </b> </td> <td class="right"> <b> <?php echo number_format($amount); ?>,- </b> </td> </tr>
+		 <tr> <td class="right" colspan="6"> Landed Cost : </td> <td class="right"> <?php echo number_format($cost); ?>,- </td> </tr>
+<tr> <td colspan="6" class="right"> <b> Total : </b> </td> <td class="right"> <b> <?php echo number_format($amount); ?>,- </b> </td> </tr>
 			
 		</table>
 		

@@ -13,6 +13,20 @@ class Sales_lib extends Custom_Model {
                              'cc_no', 'cc_name', 'cc_bank', 'sender_name', 'sender_acc', 'sender_bank', 'sender_amount', 'confirmation',
                              'approved', 'log', 'pos', 'created', 'updated', 'deleted');
 
+    // combo box get passenger name
+    function combo_passenger()
+    {
+        $data = null;
+        $this->db->select('passenger,idcard');
+        $this->db->order_by('passenger', 'asc'); 
+        $val = $this->db->get('sales_item')->result();
+        if ($val){
+          foreach($val as $row){$data['options'][$row->passenger.'|'.$row->idcard] = $row->passenger.' - '.$row->idcard;}
+        }
+        else{ $data['options'][''] = '--'; }
+        return $data;
+    }
+    
     function cek_relation($id,$type)
     {
        $this->db->where($type, $id);

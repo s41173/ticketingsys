@@ -9,9 +9,9 @@ class Sales_item_model extends Custom_Model
         $this->tableName = 'sales_item';
     }
     
-    protected $field = array('id', 'sales_id', 'passenger', 'source', 'dates', 'source_desc', 
+    protected $field = array('id', 'sales_id', 'passenger', 'idcard', 'source', 'dates', 'source_desc', 
                              'destination', 'destination_desc', 'country',
-                             'returns', 'return_dates', 'ticketno', 'bookcode', 'airline', 'price', 'amount', 'hpp', 'discount', 'tax');
+                             'returns', 'return_dates', 'ticketno', 'bookcode', 'airline', 'vendor', 'price', 'amount', 'hpp', 'discount', 'tax');
     
     function get_last_item($pid)
     {
@@ -20,6 +20,16 @@ class Sales_item_model extends Custom_Model
         $this->db->where('sales_id', $pid);
         $this->db->order_by('id', 'asc'); 
         return $this->db->get(); 
+    }
+    
+    function cek_return($pid){
+        
+        $this->db->select($this->field);
+        $this->db->from($this->tableName); 
+        $this->db->where('sales_id', $pid);
+        $this->db->where('returns', TRUE);
+        $num = $this->db->get()->num_rows();
+        if ($num > 0){ return TRUE; }else{ return FALSE; }
     }
 
     function total($pid)
@@ -74,6 +84,11 @@ class Sales_item_model extends Custom_Model
 	return $userid;
     }
     
+    function update_id($uid, $users)
+    {
+        $this->db->where('id', $uid);
+        $this->db->update($this->tableName, $users);
+    }
 
 }
 

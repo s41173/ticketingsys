@@ -33,6 +33,7 @@ class Account_model extends Custom_Model
         $this->db->from($this->tableName); 
         $this->db->where('deleted', $this->deleted);
         $this->cek_null($clas, 'classification_id');
+        $this->cek_null_string(1, 'status');
         $this->db->order_by('code', 'asc'); 
         return $this->db->get(); 
     }

@@ -93,6 +93,7 @@
    <div class="btn-group">
    <a class="btn btn-primary" href="<?php echo site_url('apc/add'); ?>"> <i class="fa fa-plus"></i>&nbsp;Add New  </a>
    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal3"> Report  </button>
+   <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal4"> Payable Report </button>
 
    <!-- links -->
    <?php if (!empty($link)){foreach($link as $links){echo $links . '';}} ?>
@@ -118,6 +119,12 @@
       <!-- Modal - Report Form -->
       <div class="modal fade" id="myModal3" role="dialog">
          <?php $this->load->view('apc_report_panel'); ?>    
+      </div>
+      <!-- Modal - Report Form -->
+      
+      <!-- Modal - Report Form -->
+      <div class="modal fade" id="myModal4" role="dialog">
+         <?php $this->load->view('payable_panel'); ?>    
       </div>
       <!-- Modal - Report Form -->
       

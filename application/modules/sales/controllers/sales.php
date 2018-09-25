@@ -28,10 +28,13 @@ class Sales extends MX_Controller
         $this->account = new Account_lib();
         $this->airport = new Airport_lib();
         $this->airline = new Airline_lib();
+        $this->vendor = new Vendor_lib();
+        $this->sales = new Sales_lib();
+        $this->trans = new Trans_ledger_lib();
     }
 
-    private $properti, $modul, $title, $bank, $journalgl, $airport, $airline;
-    private $role, $currency, $customer, $payment, $city, $period, $tax, $account;
+    private $properti, $modul, $title, $bank, $journalgl, $airport, $airline, $vendor, $trans;
+    private $role, $currency, $customer, $payment, $city, $period, $tax, $account, $sales;
     
     function index()
     {
@@ -188,6 +191,11 @@ class Sales extends MX_Controller
             $this->journalgl->remove_journal('SO', $uid);
             $this->journalgl->remove_journal('CR', $uid);
             
+            // hapus kartu piutang / hutang
+            $this->trans->remove(date('Y-m-d', strtotime($sales->dates)), 'SO', $uid);
+            $this->trans->remove(date('Y-m-d', strtotime($sales->dates)), 'PO', $uid);
+            $this->trans->remove(date('Y-m-d', strtotime($sales->dates)), 'CR', $uid);
+            
             if ($sales->approved == 1){
                 
              $param = array('approved' => 0, 'paid_date' => null, 'updated' => date('Y-m-d H:i:s'));
@@ -216,6 +224,8 @@ class Sales extends MX_Controller
         $data['form_action_trans'] = site_url($this->title.'/add_item/0'); 
 
         $data['customer'] = $this->customer->combo();
+        $data['vendor'] = $this->vendor->combo();
+        $data['passenger'] = $this->sales->combo_passenger();
         $data['account'] = $this->account->combo_asset();
         $data['airport'] = $this->airport->combo();
         $data['airline'] = $this->airline->combo();
@@ -278,6 +288,7 @@ class Sales extends MX_Controller
        
          // Form validation
         $this->form_validation->set_rules('tpassenger', 'Passenger', 'required');
+        $this->form_validation->set_rules('tidcard', 'ID Card', 'required');
         $this->form_validation->set_rules('cdepart', 'Depart', 'required|callback_valid_depart');
         $this->form_validation->set_rules('tdepartdesc', 'Depart Description', '');
         $this->form_validation->set_rules('carrived', 'Arrived', 'required');
@@ -308,10 +319,10 @@ class Sales extends MX_Controller
                 }else{ $country = 'int'; }
                 if ($this->input->post('ckreturn') == 0){ $return = 'FALSE'; }else{ $return = 'TRUE'; }
                 
-                $sales = array('id' => $id, 'sales_id' => $sid, 'passenger' => $this->input->post('tpassenger'),
+                $sales = array('id' => $id, 'sales_id' => $sid, 'passenger' => $this->input->post('tpassenger'), 'idcard' => $this->input->post('tidcard'),
                                'source' => $this->input->post('cdepart'), 'dates' => $this->input->post('tdepartdates'), 'source_desc' => $this->input->post('tdepartdesc'),
                                'destination' => $this->input->post('carrived'), 'return_dates' => setnull($this->input->post('tarrivedates')), 'destination_desc' => $this->input->post('tarriveddesc'),
-                               'returns' => $return, 'ticketno' => $this->input->post('tticketno'), 'bookcode' => $this->input->post('tbook'), 'airline' => $this->input->post('cairline'),
+                               'returns' => $return, 'ticketno' => $this->input->post('tticketno'), 'bookcode' => $this->input->post('tbook'), 'airline' => $this->input->post('cairline'), 'vendor' => setnull($this->input->post('cvendor')),
                                'tax' => $tax, 'discount' => $this->input->post('tdiscount'), 'country' => $country,
                                'hpp' => $this->input->post('tcapital'), 'price' => $this->input->post('tprice'), 'amount' => floatval($amt+$tax));
 //
@@ -324,6 +335,63 @@ class Sales extends MX_Controller
             }
             else{ echo "error|".validation_errors(); }  
         }
+       }else { echo "error|Sorry, you do not have the right to edit $this->title component..!"; }
+    }
+    
+    
+    function update_item_process()
+    { 
+       if ($this->acl->otentikasi2($this->title,'ajax') == TRUE){ 
+       
+         // Form validation
+        $this->form_validation->set_rules('tpassenger', 'Passenger', 'required');
+        $this->form_validation->set_rules('tidcard', 'ID Card', 'required');
+        $this->form_validation->set_rules('cdepart', 'Depart', 'required|callback_valid_depart');
+        $this->form_validation->set_rules('tdepartdesc', 'Depart Description', '');
+        $this->form_validation->set_rules('carrived', 'Arrived', 'required');
+        $this->form_validation->set_rules('tarriveddesc', 'Arrived Description', '');
+        $this->form_validation->set_rules('tdepartdates', 'Depart Dates', 'required');
+        $this->form_validation->set_rules('tarrivedates', 'Arrived Dates', 'callback_valid_return');
+        $this->form_validation->set_rules('cairline', 'Airline', 'required');
+        $this->form_validation->set_rules('tbook', 'Book Code', 'required');
+        $this->form_validation->set_rules('tticketno', 'Ticket No', 'required');
+        $this->form_validation->set_rules('tcapital', 'Capital Price', 'required|numeric');
+        $this->form_validation->set_rules('tprice', 'Price', 'required|numeric');
+        $this->form_validation->set_rules('tdiscount', 'Discount', 'required|numeric');
+        $this->form_validation->set_rules('ctax', 'Tax Type', 'required');
+
+            if ($this->form_validation->run($this) == TRUE && $this->valid_confirm($this->input->post('tsid')) == TRUE)
+            {
+                // start transaction 
+                $this->db->trans_start(); 
+                
+                $amt = floatval($this->input->post('tprice')-$this->input->post('tdiscount'));
+                $tax = floatval($this->input->post('ctax')*$amt);
+                $id = $this->sitem->counter();
+                
+                if ($this->airport->get_country($this->input->post('cdepart')) == $this->airport->get_country($this->input->post('carrived'))){
+                    if ($this->airport->get_country($this->input->post('cdepart')) == 'id'){
+                        $country = 'id';
+                    }else{ $country = 'int'; }
+                }else{ $country = 'int'; }
+                if ($this->input->post('ckreturn') == 0){ $return = 'FALSE'; }else{ $return = 'TRUE'; }
+                
+                $sales = array('id' => $id, 'sales_id' => $this->input->post('tsid'), 'passenger' => $this->input->post('tpassenger'), 'idcard' => $this->input->post('tidcard'),
+                               'source' => $this->input->post('cdepart'), 'dates' => $this->input->post('tdepartdates'), 'source_desc' => $this->input->post('tdepartdesc'),
+                               'destination' => $this->input->post('carrived'), 'return_dates' => setnull($this->input->post('tarrivedates')), 'destination_desc' => $this->input->post('tarriveddesc'),
+                               'returns' => $return, 'ticketno' => $this->input->post('tticketno'), 'bookcode' => $this->input->post('tbook'), 'airline' => $this->input->post('cairline'), 'vendor' => setnull($this->input->post('cvendor')),
+                               'tax' => $tax, 'discount' => $this->input->post('tdiscount'), 'country' => $country,
+                               'hpp' => $this->input->post('tcapital'), 'price' => $this->input->post('tprice'), 'amount' => floatval($amt+$tax));
+
+                $this->sitem->update_id($this->input->post('tid'), $sales);
+                $this->update_trans($this->input->post('tsid'));
+                echo "true|Sales Transaction data successfully saved!|";
+                
+                $this->db->trans_complete();
+                // end transaction
+            }
+            else{ echo "error|".validation_errors(); }  
+        
        }else { echo "error|Sorry, you do not have the right to edit $this->title component..!"; }
     }
     
@@ -393,6 +461,13 @@ class Sales extends MX_Controller
        }else { echo "error|Sorry, you do not have the right to edit $this->title component..!"; }
     }
     
+    function update_item($uid)
+    {
+        $acc = $this->sitem->get_by_id($uid)->row();
+        echo $acc->id.'|'.$acc->sales_id.'|'.$acc->passenger.'|'.$acc->idcard.'|'.$acc->source.'|'.$acc->dates.'|'.$acc->source_desc.'|'.$acc->destination.'|'.$acc->destination_desc.'|'.$acc->return_dates.'|'.$acc->ticketno.'|'.
+             $acc->bookcode.'|'.$acc->airline.'|'.$acc->vendor.'|'.$acc->price.'|'.$acc->amount.'|'.$acc->hpp.'|'.$acc->discount.'|'.$acc->tax.'|'.$acc->returns;
+    }
+    
     // Fungsi update untuk menset texfield dengan nilai dari database
     function update($param=0)
     {
@@ -412,6 +487,8 @@ class Sales extends MX_Controller
         $customer = $this->customer->get_details($sales->cust_id)->row();
         
         $data['customer'] = $this->customer->combo();
+        $data['vendor'] = $this->vendor->combo();
+        $data['passenger'] = $this->sales->combo_passenger();
         $data['account'] = $this->account->combo_asset();
         $data['airport'] = $this->airport->combo();
         $data['airline'] = $this->airline->combo();
@@ -496,8 +573,7 @@ class Sales extends MX_Controller
        $terbilang = $this->load->library('terbilang');
        $data['terbilang'] = ucwords($terbilang->baca($sales->amount).' '.$matauang);
 
-       $this->load->view('sales_invoice', $data);
-       
+        if ($this->sitem->cek_return($sid) == TRUE){ $this->load->view('sales_invoice_return', $data);}else{ $this->load->view('sales_invoice', $data); }
    }
     
     function update_process($param)
@@ -565,7 +641,10 @@ class Sales extends MX_Controller
         $ar       = $cm->get_id(17);
         
         if ($this->payment->get_name($sales->payment_id) == 'Cash'){ $account = $sales->account; }
-        else{ $account = $ar; }    
+        else{ $account = $ar; 
+          // kartu piutang
+          $this->trans->add('bank', 'SO', $sales->id, 'IDR', $sales->dates, $sales->amount, 0, $sales->cust_id, 'AR');
+        }    
         
         $this->journalgl->new_journal($sales->id, $sales->dates,'SO','IDR','SalesOrder - '.$sales->code, $sales->amount, $this->session->userdata('log'));
         $jid = $this->journalgl->get_journal_id('SO',$sales->id);
@@ -582,11 +661,17 @@ class Sales extends MX_Controller
         $hpp_int  = $cm->get_id(62);
         $sales_id  = $cm->get_id(63);
         $sales_int  = $cm->get_id(64);
+        $ap = $cm->get_id(11);
         
         foreach ($items as $res){
             
             $ar_airline = $this->airline->get_detail_field('account', $res->airline);
-            $this->journalgl->add_trans($jid,$ar_airline, 0, $res->hpp); // kurang piutang atau tambah hutang airline
+            if ($res->vendor == null)
+            { $this->journalgl->add_trans($jid,$ar_airline, 0, $res->hpp); /* kurang piutang atau tambah hutang airline */  
+            }
+            else{ $this->journalgl->add_trans($jid,$ap, 0, $res->hpp); 
+                  $this->trans->add('bank', 'PO', $res->sales_id, 'IDR', $sales->dates, 0, $res->amount, $res->vendor, 'AP'); // kartu hutang
+            }
             
             if ($res->country == 'id'){
                 $this->journalgl->add_trans($jid,$hpp_id, $res->hpp, 0); // tambah (hpp) domestic
@@ -596,7 +681,6 @@ class Sales extends MX_Controller
                 $this->journalgl->add_trans($jid,$sales_int,0,$res->price); // tambah penjualan intl
             }
         }
-        
     }
 
     
@@ -647,6 +731,8 @@ class Sales extends MX_Controller
     {
         $sales = $this->Sales_model->get_by_id($sid)->row();
         $cm = new Control_model();
+        
+        $this->trans->add('bank', 'CR', $sales->id, 'IDR', $sales->dates, 0, $sales->amount, $sales->cust_id, 'AR'); // pelunasan kartu piutang
         
         $ar = $cm->get_id(17);
         $account = $sales->account;
@@ -772,7 +858,41 @@ class Sales extends MX_Controller
         elseif($type == 2) { $this->load->view('sales_report_item', $data); }
         elseif($type == 3) { $this->load->view('sales_pivot_item', $data); }
         elseif($type == 4) { $this->load->view('sales_paid', $data); }
-    }   
+    } 
+    
+    function receivable_process()
+    {
+        $this->acl->otentikasi2($this->title);
+        $data['title'] = $this->properti['name'].' | Report '.ucwords($this->modul['title']);
+
+        $data['rundate'] = tglin(date('Y-m-d'));
+        $data['log'] = $this->session->userdata('log');
+        $period = $this->input->post('reservation');  
+        $start = picker_between_split($period, 0);
+        $end = picker_between_split($period, 1);
+
+        $data['start'] = tglin($start);
+        $data['end'] = tglin($end);
+        
+        $cust = $this->input->post('ccustomer');
+        $trans = $this->input->post('ctrans');
+
+        $data['currency'] = 'IDR';
+        $data['start'] = tglin($start);
+        $data['end'] = tglin($end);
+
+        $data['rundate'] = tgleng(date('Y-m-d'));
+        $data['log'] = $this->session->userdata('log');
+        
+        // Property Details
+        $data['company'] = $this->properti['name'];
+        
+        $data['customer'] = $this->customer->get_name($cust);
+        $data['open'] = $this->trans->get_sum_transaction_open_balance(null, 'IDR', $start, $cust, 'AR', $trans);
+        $data['trans'] = $this->trans->get_transaction(null, 'IDR', $start, $end, $cust, 'AR', $trans)->result();
+        
+        $this->load->view('receivable_card', $data);
+    }
 
 }
 

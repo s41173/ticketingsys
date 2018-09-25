@@ -21,11 +21,12 @@ class Cashout extends MX_Controller
         $this->vendor = new Vendor_lib();
         $this->load->library('terbilang');
         $this->ledger  = new Cash_ledger_lib();
+        $this->trans = new Trans_ledger_lib();
 
         $this->model = new Cashouts();
     }
 
-    private $properti, $modul, $title,$model,$ledger;
+    private $properti, $modul, $title,$model,$ledger,$trans;
     private $vendor,$user,$cash,$currency,$account,$journalgl;
 
     private  $atts = array('width'=> '800','height'=> '600',
@@ -118,9 +119,8 @@ class Cashout extends MX_Controller
             $cash1 = $this->model->where('id', $pid)->get();
             $transs = $this->transmodel->get_last_item($pid)->result();
              
-            // add cash ledger
-//            $this->ledger->remove($cash1->dates, "CR-000".$cash1->no);
-//            $this->ledger->add($this->get_acc_type($cash1->acc), "CR-000".$cash1->no, $cash1->currency, $cash1->dates, $cash1->amount, 0);
+            // pelunasan kartu hutang
+            $this->trans->add('bank', 'CD', $cash1->no, strtoupper($cash1->currency), $cash1->dates, $cash1->amount, 0, $cash1->vendor, 'AP');
             
              $account  = $cash1->acc;
             
@@ -160,6 +160,7 @@ class Cashout extends MX_Controller
         { 
            if ($val->approved == 1)
            {    
+             $this->trans->remove($val->dates, 'CD', $val->no); // hapus kartu hutang  
              $this->journalgl->remove_journal('CD', '0000'.$val->no);
              $val->approved = 0;
              $val->save();

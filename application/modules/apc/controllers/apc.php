@@ -25,11 +25,12 @@ class Apc extends MX_Controller
         $this->journalgl = new Journalgl_lib();
         $this->account = new Account_lib();
         $this->model = new Apcmodel();
-       
+        $this->vendor = new Vendor_lib();
+        $this->trans = new Trans_ledger_lib();
     }
 
     private $properti, $modul, $title, $cost,$ps, $model, $ledger, $account;
-    private $user,$tax,$journal,$journalgl,$currency,$unit;
+    private $user,$tax,$journal,$journalgl,$currency,$unit,$vendor,$trans;
 
     function index()
     {
@@ -71,6 +72,7 @@ class Apc extends MX_Controller
         $data['link'] = array('link_back' => anchor('main/','Back', array('class' => 'btn btn-danger')));
         
         $data['currency'] = $this->currency->combo();
+        $data['vendor'] = $this->vendor->combo();
 	// ---------------------------------------- //
  
         $config['first_tag_open'] = $config['last_tag_open']= $config['next_tag_open']= $config['prev_tag_open'] = $config['num_tag_open'] = '<li>';
@@ -393,7 +395,7 @@ class Apc extends MX_Controller
         
         $data['default']['dates'] = $ap->dates;
         $data['default']['currency'] = $ap->currency;
-        $data['default']['acc'] = $ap->acc;
+        $data['default']['acc'] = $ap->account;
         $data['default']['note'] = $ap->notes;
         $data['default']['desc'] = $ap->desc;
         $data['default']['user'] = $this->user->get_username($ap->user);
@@ -768,6 +770,39 @@ class Apc extends MX_Controller
         
         $this->load->view($page, $data);
         
+    }
+    
+    function payable_process()
+    {
+        $this->acl->otentikasi2($this->title);
+        $data['title'] = $this->properti['name'].' | Report '.ucwords($this->modul['title']);
+
+        $data['rundate'] = tglin(date('Y-m-d'));
+        $data['log'] = $this->session->userdata('log');
+        $period = $this->input->post('reservation');  
+        $start = picker_between_split($period, 0);
+        $end = picker_between_split($period, 1);
+
+        $data['start'] = tglin($start);
+        $data['end'] = tglin($end);
+        
+        $cust = $this->input->post('cvendor');
+
+        $data['currency'] = 'IDR';
+        $data['start'] = tglin($start);
+        $data['end'] = tglin($end);
+
+        $data['rundate'] = tgleng(date('Y-m-d'));
+        $data['log'] = $this->session->userdata('log');
+        
+        // Property Details
+        $data['company'] = $this->properti['name'];
+        
+        $data['customer'] = $this->vendor->get_vendor_name($cust);
+        $data['open'] = $this->trans->get_sum_transaction_open_balance_ap('bank', 'IDR', $start, $cust, 'AP', 'PO');
+        $data['trans'] = $this->trans->get_transaction_ap('bank', 'IDR', $start, $end, $cust, 'AP', 'PO')->result();
+        
+        $this->load->view('payable_card', $data);
     }
 
 

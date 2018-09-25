@@ -28,6 +28,7 @@
 	var sites_edit = "<?php echo site_url('sales/update_process/');?>";
 	var sites_del  = "<?php echo site_url('sales/delete/');?>";
 	var sites_get  = "<?php echo site_url('sales/update/');?>";
+    var sites_get_item  = "<?php echo site_url('sales/update_item/');?>";
     var sites  = "<?php echo site_url('sales');?>";
 	var source = "<?php echo $source;?>";
     var url  = "<?php echo $graph;?>";
@@ -212,8 +213,22 @@ $atts2 = array(
            
    <form id="ajaxtransform" class="form-inline" method="post" action="<?php echo $form_action_trans; ?>">
       <div class="form-group">
-        <label class="control-label labelx"> Passenger </label> <br>
-        <textarea class="form-control col-md-3 col-xs-12" id="tpassenger" name="tpassenger"></textarea>
+        <label class="control-label labelx"> Passenger / ID No </label> <br>
+        <table>
+        <tr>
+         <td> <?php $js = "class='select2_single form-control' id='cpassenger' tabindex='-1' style='width:197px;' "; 
+	       echo form_dropdown('cpassenger', $passenger, isset($default['passenger']) ? $default['passenger'] : '', $js); ?> &nbsp; </td>
+        </tr>
+             <tr>
+         <td> <textarea class="form-control col-md-3 col-xs-12" id="tpassenger" name="tpassenger"></textarea> </td>
+             </tr>
+             <tr>
+         <td>
+             <input type="text" class="form-control" id="tidcard" name="tidcard" style="margin-top:5px;">
+         </td>
+             </tr>
+         </table>
+        
         &nbsp;
       </div>
 
@@ -264,7 +279,7 @@ $atts2 = array(
       </div>
       
       <div class="form-group">
-        <label class="control-label labelx"> Airline &amp; Booking Code </label> <br>
+        <label class="control-label labelx"> Airline &amp; Booking Code &amp; Vendor </label> <br>
         <table>
         <tr>
          <td> <?php $js = "class='select2_single form-control' id='cairline' tabindex='-1' style='width:240px;' "; 
@@ -275,8 +290,13 @@ $atts2 = array(
           <input type="text" class="form-control" name="tbook" id="tbook" placeholder="Booking Code" style="width:240px; padding-top:5px;">
           &nbsp; </td>
         </tr>
+        <tr>
+         <td> 
+         <?php $js = "class='select2_single form-control' id='cvendor' tabindex='-1' style='min-width:240px;' "; 
+	     echo form_dropdown('cvendor', $vendor, isset($default['vendor']) ? $default['vendor'] : '', $js); ?>
+         </td>
+        </tr>
         </table>
-        
         
       </div>
       
@@ -331,6 +351,7 @@ $atts2 = array(
             <th class="column-title"> Routing </th>
             <th class="column-title"> DepTime </th>
             <th class="column-title"> Return </th>
+            <th class="column-title"> Vendor </th>
             <th class="column-title"> Airline </th>
             <th class="column-title"> Ticket No </th>
             <th class="column-title"> Capital </th>
@@ -362,17 +383,23 @@ $atts2 = array(
                     return $lib->get_detail_field('code',$val);
                 }
                 
+                function vendor($val){
+                    $lib = new Vendor_lib();
+                    return $lib->get_vendor_name($val);
+                }
+                
                 $i=1;
                 foreach($items as $res)
                 {
-if ($res->returns == 0){ $return = '-'; }else{ $return = tglin($res->return_dates).' '.timein($res->return_dates); }
+if ($res->returns == FALSE){ $return = '-'; }else{ $return = tglin($res->return_dates).' '.timein($res->return_dates); }
                     echo "
                      <tr class=\"even pointer\">
                         <td> ".$i." </td>
-                        <td> ".ucfirst($res->passenger)." </td>
+                        <td> ".ucfirst($res->passenger).' - '.$res->idcard." </td>
                         <td> ".airport($res->source)." - ".airport($res->destination)."</td>
                         <td> ".tglin($res->dates).' '.timein($res->dates)." </td>
                         <td> ".$return." </td>
+                        <td> ".vendor($res->vendor)." </td>
                         <td> ".airline($res->airline)." </td>    
                         <td> ".$res->ticketno." </td>
                         <td class=\"a-right a-right \"> ".idr_format($res->hpp)." </td>
@@ -381,9 +408,14 @@ if ($res->returns == 0){ $return = '-'; }else{ $return = tglin($res->return_date
                         <td class=\"a-right a-right \"> ".idr_format($res->tax)." </td>
                         <td class=\"a-right a-right \"> ".idr_format($res->amount)." </td>
 <td class=\" last\"> 
+
+<a class=\"btn btn-primary btn-xs text-update\" id=\"".$res->id."\"> <i class=\"fa fas-2x fa-edit\"> </i> </a>
+
 <a class=\"btn btn-danger btn-xs\" href=\"".site_url('sales/delete_item/'.$res->id.'/'.$res->sales_id)."\"> 
 <i class=\"fa fas-2x fa-trash\"> </i> 
-</a> </td>
+</a> 
+
+</td>
                       </tr>
                     "; $i++;
                 }
@@ -427,6 +459,12 @@ if ($res->returns == 0){ $return = '-'; }else{ $return = tglin($res->return_date
                      
     </div>
   </div>
+     
+  <!-- Modal - Add Form -->
+  <div class="modal fade" id="myModal" role="dialog">
+         <?php $this->load->view('sales_update_item'); ?>      
+  </div>
+      <!-- Modal - Add Form -->
       
       <script src="<?php echo base_url(); ?>js/icheck/icheck.min.js"></script>
       

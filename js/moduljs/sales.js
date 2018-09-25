@@ -16,7 +16,7 @@ $(document).ready(function (e) {
         showDropdowns: true
 	 });
 	 
-	 $('#ds3,#ds4').daterangepicker({
+	 $('#ds3,#ds4,#ds3_update,#ds4_update').daterangepicker({
         locale: {format: 'YYYY-MM-DD hh:mm A'},
 		singleDatePicker: true,
 		timePicker:true,
@@ -31,6 +31,14 @@ $(document).ready(function (e) {
 		}else {
 			$('#ds4').val('');
 			$("#ds4").prop('disabled', true);
+	    }
+	});
+	
+	$('#ckreturn_update').change(function() {
+        if($(this).is(":checked")) {
+		  $("#ds4_update").prop('disabled', false);
+		}else {
+			$("#ds4_update").prop('disabled', true);
 	    }
     });
 
@@ -83,6 +91,74 @@ $(document).ready(function (e) {
 		var url = sites_get +"/"+ del_id;
 		
 		window.location.href = url;
+		
+	});
+
+	// fungsi jquery update transaction item
+	$(document).on('click','.text-update',function(e)
+	{	e.preventDefault();
+		var element = $(this);
+		var del_id = element.attr("id");
+		var url = sites_get_item+"/"+ del_id;
+		
+		$("#myModal").modal('show');
+
+		$.ajax({
+			type: 'POST',
+			url: url,
+    	    cache: false,
+			headers: { "cache-control": "no-cache" },
+			success: function(result) {
+
+				res = result.split("|");
+
+			// 0$acc->id.'|'.
+			// 1 $acc->sales_id.'|'.
+			// 2 $acc->passenger.'|'.
+			// 3 $acc->idcard.'|'.
+			// 4 $acc->source.'|'.
+			// 5  $acc->dates.'|'.
+			// 6 $acc->source_desc.'|'.
+			// 7  $acc->destination.'|'.
+			// 8  $acc->destination_desc.'|'.
+			// 9  $acc->return_dates.'|'.
+			// 10  $acc->ticketno.'|'.
+			// 11  $acc->bookcode.'|'.
+			// 12 $acc->airline.'|'.
+			// 13 $acc->vendor.'|'.
+			// 14 $acc->price.'|'.
+			// 15 $acc->amount.'|'.
+			// 16 $acc->hpp.'|'.
+			// 17 $acc->discount.'|'.
+			// 18 $acc->tax.'|'.
+			// 19 $acc->returns;
+
+			    console.log(res[13]);
+
+				$("#tid").val(res[0]);
+				$("#tsid").val(res[1]);
+				$("#tpassenger_update").val(res[2]);
+				$("#tidcard_update").val(res[3]);
+				$("#cdepart_update").val(res[4]);
+				$("#ds3_update").val(res[5]);
+				$("#tdepartdesc_update").val(res[6]);
+				$("#carrived_update").val(res[7]);
+				$("#tarriveddesc_update").val(res[8]);
+				$("#ds4_update").val(res[9]);
+				$("#tticketno_update").val(res[10]);
+				$("#tbook_update").val(res[11]);
+				$("#cairline_update").val(res[12]);
+				$("#tprice_update").val(res[14]);
+				$("#cvendor_update").val(res[13]).change();
+				$("#tcapital_update").val(res[16]);
+				$("#tdiscount_update").val(res[17]);
+				$("#ctax_update").val(res[18]);
+				$("#ttax").val(res[18]);
+				if (res[19] == 'TRUE'){ $("#ckreturn_update").prop('checked', true);
+				}else{ $("#ckreturn_update").prop('checked', false); }
+			}
+		})
+		return false;	
 		
 	});
 	
@@ -172,6 +248,46 @@ $(document).ready(function (e) {
 		return false;
 	});
 
+	// ajax form non upload data
+	$("#edit_ajax_item").on('submit',(function(e) {
+		
+		var elem = $(this);
+		e.preventDefault();
+		$.ajax({
+        	url: $(this).attr('action'),
+			type: "POST",
+			data:  new FormData(this),
+			contentType: false,
+    	    cache: false,
+			processData:false,
+			beforeSend : function()
+			{
+				//$("#preview").fadeOut();
+			},
+			success: function(data)
+		    {
+				res = data.split("|");
+				
+				if(res[0]=='true')
+				{
+					// invalid file format.
+					error_mess(1,res[1]);
+					location.reload(true);
+					// if (elem.attr('id') == "upload_form_non"){ resets(); }
+				}
+				else if(res[0] == 'warning'){ error_mess(2,res[1]); }
+				else if(res[0] == 'error'){ error_mess(3,res[1]); }
+		    },
+		  	error: function(e) 
+	    	{
+				//$("#error").html(e).fadeIn();
+				error_mess(3,e);
+				console.log(e.responseText);	
+	    	} 	        
+	   });
+	     
+	}));
+
 	// ajax transaction data 
 	$('#ajaxtransform,#ajaxtransform1').submit(function() {
 
@@ -226,6 +342,18 @@ $(document).ready(function (e) {
 
 		}else { swal('Error Load Data...!', "", "error"); }
 
+	});
+
+	$(document).on('change','#cpassenger',function(e)
+	{	
+		e.preventDefault();
+		var value = $(this).val();
+
+		if (value){ 
+			var res = value.split('|');
+			$("#tpassenger").val(res[0]);
+			$("#tidcard").val(res[1]);
+		}
 	});
 
 	// get details product
