@@ -49,7 +49,7 @@
 
 	<center>
 	   <div style="border:0px solid green; width:230px;">
-	      <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales - Transaction Report (Pivot Table) </h4>
+	      <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales Service - Transaction Report (Pivot Table) </h4>
 	   </div>
 	</center>
 
@@ -62,10 +62,10 @@
         </div>
 
 		<table id="input" border="0" width="100%">
-		   <thead>
+		  <thead>
            <tr>
-<th> No </th> <th> Code </th> <th> Date </th> <th> Passenger </th> <th> Routing </th> <th> Routing Desc </th>
-<th> Return </th> <th> Airline </th> <th> BookCode </th> <th> Ticket No </th> <th> Vendor </th> <th> Region </th> <th> Capital </th> <th> Price </th> <th> Discount </th>
+<th> No </th> <th> Code </th> <th> Date </th> <th> Passenger </th> <th> Period </th> <th> Description </th>
+<th> BookCode </th> <th> Vendor </th> <th> Capital </th> <th> Price </th> <th> Discount </th>
 <th> Tax </th> <th> Amount </th> <th> Profit </th> <th> Approved </th> 
            </tr>
            </thead>
@@ -80,21 +80,6 @@
               }
               
               function pstatus($val){ if ($val == 0){ return 'N'; }else{ return 'Y'; } }
-              function returns($val){
-                  if ($val == NULL){return '-'; }else{
-                      return tglin($val).'-'.timein($val);
-                  }
-              }
-              
-              function airport($val){
-                    $lib = new Airport_lib();
-                    return $lib->get_code($val);
-              }
-                
-              function airline($val){
-                    $lib = new Airline_lib();
-                    return $lib->get_detail_field('code',$val);
-              }
               
               function profit($hpp,$price,$discount){
                   return floatval($price-$discount-$hpp);
@@ -116,14 +101,10 @@
                        <td class=\"strongs\">".$res->code."</td> 
                        <td class=\"strongs\">".tglin($res->dates)."</td> 
                        <td class=\"strongs\">".strtoupper($res->passenger.' - '.$res->idcard)."</td>
-                       <td class=\"strongs\">".airport($res->source).' - '.airport($res->destination)."</td>
-                       <td class=\"strongs\">".strtoupper($res->source_desc).' - '.strtoupper($res->destination_desc)."</td>
-                       <td class=\"strongs\">".returns($res->return_dates)."</td>
-                       <td class=\"strongs\">".airline($res->airline)."</td>
+                       <td class=\"strongs\">".tglin($res->checkin).' - '.tglin($res->checkout)."</td>
+                       <td class=\"strongs\">".$res->description."</td>
                        <td class=\"strongs\">".$res->bookcode."</td>
-                       <td class=\"strongs\">".$res->ticketno."</td>
                        <td class=\"strongs\">".vendor($res->vendor)."</td>
-                       <td class=\"strongs\">".strtoupper($res->country)."</td>
                        <td class=\"strongs\">".$res->hpp."</td>
                        <td class=\"strongs\">".$res->price."</td>
                        <td class=\"strongs\">".$res->discount."</td>
@@ -136,12 +117,12 @@
 				}
 			 }  
 		  ?>
-		</tbody>                  
+		</tbody>                
 		</table>
         
 	</div>
 	
-     <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('sales'); ?>"> 
+     <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('service'); ?>"> 
         <img src="<?php echo base_url().'images/back.png'; ?>"> 
      </a>
     

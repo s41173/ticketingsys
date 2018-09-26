@@ -68,22 +68,18 @@
                         { name: "No", type: "string" },
 						{ name: "Code", type: "string" },
 						{ name: "Date", type: "string" },
-						{ name: "Passenger", type: "string" },
-						{ name: "Routing", type: "string" },
-                        { name: "Routing Desc", type: "string" },
-                        { name: "Return", type: "string" },
-                        { name: "Airline", type: "string" },
-                        { name: "BookCode", type: "string" },
-                        { name: "Ticket No", type: "string" },
-                        { name: "Vendor", type: "string" },
-                        { name: "Region", type: "string" },
-                        { name: "Capital", type: "number" },
-                        { name: "Price", type: "number" },
-                        { name: "Discount", type: "number" },
-                        { name: "Tax", type: "number" },
-                        { name: "Amount", type: "number" },
-                        { name: "Profit", type: "number" },
-                        { name: "Approved", type: "string" }
+						{ name: "Amount", type: "number" },
+						{ name: "Payment Type", type: "string" },
+                        { name: "Paid Date", type: "string" },
+                        { name: "CC No", type: "string" },
+                        { name: "CC Name", type: "string" },
+                        { name: "CC Bank", type: "string" },
+                        { name: "Sender Name", type: "string" },
+                        { name: "Sender Acc", type: "string" },
+                        { name: "Sender Bank", type: "string" },
+                        { name: "Sender Amount", type: "number" },
+                        { name: "Account", type: "string" },
+                        { name: "Log", type: "string" }
                     ]
                 };
 			
@@ -109,22 +105,18 @@
                   { text: 'No', dataField: 'No', width: 50 },
                   { text: 'Code', dataField: 'Code', width : 100 },
 				  { text: 'Date', dataField: 'Date', width : 130 },
-  				  { text: 'Passenger', dataField: 'Passenger', width : 250 },
-				  { text: 'Routing', dataField: 'Routing', width : 150 },
-                  { text: 'Routing Desc', dataField: 'Routing Desc', width : 250 },
-                  { text: 'Return', dataField: 'Return', width : 150 },
-                  { text: 'Airline', dataField: 'Airline', width : 120 },
-                  { text: 'BookCode', dataField: 'BookCode', width : 120 },
-                  { text: 'Ticket No', dataField: 'Ticket No', width : 150 },
-                  { text: 'Vendor', dataField: 'Vendor', width : 200 },
-                  { text: 'Region', dataField: 'Region', width : 100 },
-{ text: 'Capital', dataField: 'Capital', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
-{ text: 'Price', dataField: 'Price', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
-{ text: 'Discount', dataField: 'Discount', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
-{ text: 'Tax', dataField: 'Tax', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
-{ text: 'Amount', dataField: 'Amount', width : 150, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
-{ text: 'Profit', dataField: 'Profit', width : 150, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
-                  { text: 'Approved', dataField: 'Approved', width : 100 }
+{ text: 'Amount', dataField: 'Amount', width : 130, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
+{ text: 'Payment Type', dataField: 'Payment Type', width : 130 },
+{ text: 'Paid Date', dataField: 'Paid Date', width : 150 },
+{ text: 'CC No', dataField: 'CC No', width : 150 },
+{ text: 'CC Name', dataField: 'CC Name', width : 180 },
+{ text: 'CC Bank', dataField: 'CC Bank', width : 150 },
+{ text: 'Sender Name', dataField: 'Sender Name', width : 150 },
+{ text: 'Sender Acc', dataField: 'Sender Acc', width : 150 },
+{ text: 'Sender Bank', dataField: 'Sender Bank', width : 150 },
+{ text: 'Sender Amount', dataField: 'Sender Amount', width : 150, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },                    
+{ text: 'Account', dataField: 'Account', width : 250 },
+{ text: 'Log', dataField: 'Log', width : 100 }
                 ]
             });
 			
@@ -178,7 +170,7 @@
 
 	<center>
 	   <div style="border:0px solid green; width:230px;">	
-	       <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales Report - Transaction Details </h4>
+	       <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales Service Report - Paid Transaction </h4>
 	   </div>
 	</center>
 	
@@ -205,9 +197,9 @@
 		<table id="table" border="0" width="100%">
 		   <thead>
            <tr>
-<th> No </th> <th> Code </th> <th> Date </th> <th> Passenger </th> <th> Routing </th> <th> Routing Desc </th>
-<th> Return </th> <th> Airline </th> <th> BookCode </th> <th> Ticket No </th> <th> Vendor </th> <th> Region </th> <th> Capital </th> <th> Price </th> <th> Discount </th>
-<th> Tax </th> <th> Amount </th> <th> Profit </th> <th> Approved </th> 
+<th> No </th> <th> Code </th> <th> Date </th> <th> Amount </th> <th> Payment Type </th> <th> Paid Date </th> 
+<th> CC No </th> <th> CC Name </th> <th> CC Bank </th> <th> Sender Name </th> <th> Sender Acc </th> <th> Sender Bank </th>
+<th> Sender Amount </th> <th> Account </th> <th> Log </th>
            </tr>
            </thead>
 		  
@@ -221,57 +213,39 @@
               }
               
               function pstatus($val){ if ($val == 0){ return 'N'; }else{ return 'Y'; } }
-              function returns($val){
+              function paid($val){
                   if ($val == NULL){return '-'; }else{
                       return tglin($val).'-'.timein($val);
                   }
               }
               
-              function airport($val){
-                    $lib = new Airport_lib();
-                    return $lib->get_code($val);
+              function account($val){
+                  $acc = new Account_lib();
+                  return $acc->get_code($val).' : '.$acc->get_name($val);
               }
-                
-              function airline($val){
-                    $lib = new Airline_lib();
-                    return $lib->get_detail_field('code',$val);
-              }
-              
-              function profit($hpp,$price,$discount){
-                  return floatval($price-$discount-$hpp);
-              }
-              
-              function vendor($val){
-                  $lib = new Vendor_lib();
-                  return strtoupper($lib->get_vendor_name($val));
-              }
-			  		  
+              		  
 		      $i=1; 
-			  if ($reports_item)
+			  if ($reports)
 			  {
-				foreach ($reports_item as $res)
+				foreach ($reports as $res)
 				{	
 				   echo " 
 				   <tr> 
 				       <td class=\"strongs\">".$i."</td> 
                        <td class=\"strongs\">".$res->code."</td> 
                        <td class=\"strongs\">".tglin($res->dates)."</td> 
-                       <td class=\"strongs\">".strtoupper($res->passenger.' - '.$res->idcard)."</td>
-                       <td class=\"strongs\">".airport($res->source).' - '.airport($res->destination)."</td>
-                       <td class=\"strongs\">".strtoupper($res->source_desc).' - '.strtoupper($res->destination_desc)."</td>
-                       <td class=\"strongs\">".returns($res->return_dates)."</td>
-                       <td class=\"strongs\">".airline($res->airline)."</td>
-                       <td class=\"strongs\">".$res->bookcode."</td>
-                       <td class=\"strongs\">".$res->ticketno."</td>
-                       <td class=\"strongs\">".vendor($res->vendor)."</td>
-                       <td class=\"strongs\">".strtoupper($res->country)."</td>
-                       <td class=\"strongs\">".$res->hpp."</td>
-                       <td class=\"strongs\">".$res->price."</td>
-                       <td class=\"strongs\">".$res->discount."</td>
-                       <td class=\"strongs\">".$res->tax."</td>
                        <td class=\"strongs\">".$res->amount."</td>
-                       <td class=\"strongs\">".profit($res->hpp,$res->price,$res->discount)."</td>
-                       <td class=\"strongs\">".pstatus($res->approved)."</td>
+                       <td class=\"strongs\">".payment($res->payment_id)."</td>
+                       <td class=\"strongs\">".paid($res->paid_date)."</td>
+                       <td class=\"strongs\">".strtoupper($res->cc_no)."</td>
+                       <td class=\"strongs\">".strtoupper($res->cc_name)."</td>
+                       <td class=\"strongs\">".strtoupper($res->cc_bank)."</td>
+                       <td class=\"strongs\">".strtoupper($res->sender_name)."</td>
+                       <td class=\"strongs\">".strtoupper($res->sender_acc)."</td>
+                       <td class=\"strongs\">".strtoupper($res->sender_bank)."</td>
+                       <td class=\"strongs\">".$res->sender_amount."</td>
+                       <td class=\"strongs\">".account($res->account)."</td>
+                       <td class=\"strongs\">".$res->log."</td>
 				   </tr>";
 				   $i++;
 				}
@@ -282,7 +256,7 @@
         
         </div>
         
-        <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('sales'); ?>"> 
+        <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('service'); ?>"> 
           <img src="<?php echo base_url().'images/back.png'; ?>"> 
         </a>
         

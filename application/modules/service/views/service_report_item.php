@@ -69,14 +69,10 @@
 						{ name: "Code", type: "string" },
 						{ name: "Date", type: "string" },
 						{ name: "Passenger", type: "string" },
-						{ name: "Routing", type: "string" },
-                        { name: "Routing Desc", type: "string" },
-                        { name: "Return", type: "string" },
-                        { name: "Airline", type: "string" },
+						{ name: "Period", type: "string" },
+                        { name: "Description", type: "string" },
                         { name: "BookCode", type: "string" },
-                        { name: "Ticket No", type: "string" },
                         { name: "Vendor", type: "string" },
-                        { name: "Region", type: "string" },
                         { name: "Capital", type: "number" },
                         { name: "Price", type: "number" },
                         { name: "Discount", type: "number" },
@@ -110,14 +106,10 @@
                   { text: 'Code', dataField: 'Code', width : 100 },
 				  { text: 'Date', dataField: 'Date', width : 130 },
   				  { text: 'Passenger', dataField: 'Passenger', width : 250 },
-				  { text: 'Routing', dataField: 'Routing', width : 150 },
-                  { text: 'Routing Desc', dataField: 'Routing Desc', width : 250 },
-                  { text: 'Return', dataField: 'Return', width : 150 },
-                  { text: 'Airline', dataField: 'Airline', width : 120 },
+				  { text: 'Period', dataField: 'Period', width : 150 },
+                  { text: 'Description', dataField: 'Description', width : 250 },
                   { text: 'BookCode', dataField: 'BookCode', width : 120 },
-                  { text: 'Ticket No', dataField: 'Ticket No', width : 150 },
                   { text: 'Vendor', dataField: 'Vendor', width : 200 },
-                  { text: 'Region', dataField: 'Region', width : 100 },
 { text: 'Capital', dataField: 'Capital', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
 { text: 'Price', dataField: 'Price', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
 { text: 'Discount', dataField: 'Discount', width : 100, cellsalign: 'right', cellsformat: 'number', aggregates: ['sum'] },
@@ -178,7 +170,7 @@
 
 	<center>
 	   <div style="border:0px solid green; width:230px;">	
-	       <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales Report - Transaction Details </h4>
+	       <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales Service Report - Transaction Details </h4>
 	   </div>
 	</center>
 	
@@ -205,8 +197,8 @@
 		<table id="table" border="0" width="100%">
 		   <thead>
            <tr>
-<th> No </th> <th> Code </th> <th> Date </th> <th> Passenger </th> <th> Routing </th> <th> Routing Desc </th>
-<th> Return </th> <th> Airline </th> <th> BookCode </th> <th> Ticket No </th> <th> Vendor </th> <th> Region </th> <th> Capital </th> <th> Price </th> <th> Discount </th>
+<th> No </th> <th> Code </th> <th> Date </th> <th> Passenger </th> <th> Period </th> <th> Description </th>
+<th> BookCode </th> <th> Vendor </th> <th> Capital </th> <th> Price </th> <th> Discount </th>
 <th> Tax </th> <th> Amount </th> <th> Profit </th> <th> Approved </th> 
            </tr>
            </thead>
@@ -221,21 +213,6 @@
               }
               
               function pstatus($val){ if ($val == 0){ return 'N'; }else{ return 'Y'; } }
-              function returns($val){
-                  if ($val == NULL){return '-'; }else{
-                      return tglin($val).'-'.timein($val);
-                  }
-              }
-              
-              function airport($val){
-                    $lib = new Airport_lib();
-                    return $lib->get_code($val);
-              }
-                
-              function airline($val){
-                    $lib = new Airline_lib();
-                    return $lib->get_detail_field('code',$val);
-              }
               
               function profit($hpp,$price,$discount){
                   return floatval($price-$discount-$hpp);
@@ -257,14 +234,10 @@
                        <td class=\"strongs\">".$res->code."</td> 
                        <td class=\"strongs\">".tglin($res->dates)."</td> 
                        <td class=\"strongs\">".strtoupper($res->passenger.' - '.$res->idcard)."</td>
-                       <td class=\"strongs\">".airport($res->source).' - '.airport($res->destination)."</td>
-                       <td class=\"strongs\">".strtoupper($res->source_desc).' - '.strtoupper($res->destination_desc)."</td>
-                       <td class=\"strongs\">".returns($res->return_dates)."</td>
-                       <td class=\"strongs\">".airline($res->airline)."</td>
+                       <td class=\"strongs\">".tglin($res->checkin).' - '.tglin($res->checkout)."</td>
+                       <td class=\"strongs\">".$res->description."</td>
                        <td class=\"strongs\">".$res->bookcode."</td>
-                       <td class=\"strongs\">".$res->ticketno."</td>
                        <td class=\"strongs\">".vendor($res->vendor)."</td>
-                       <td class=\"strongs\">".strtoupper($res->country)."</td>
                        <td class=\"strongs\">".$res->hpp."</td>
                        <td class=\"strongs\">".$res->price."</td>
                        <td class=\"strongs\">".$res->discount."</td>
@@ -282,7 +255,7 @@
         
         </div>
         
-        <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('sales'); ?>"> 
+        <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('service'); ?>"> 
           <img src="<?php echo base_url().'images/back.png'; ?>"> 
         </a>
         

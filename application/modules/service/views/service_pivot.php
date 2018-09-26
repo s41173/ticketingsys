@@ -49,7 +49,7 @@
 
 	<center>
 	   <div style="border:0px solid green; width:230px;">
-	      <h4> <?php echo isset($company) ? $company : ''; ?> <br> Sales - Transaction Report (Pivot Table) </h4>
+	      <h4> <?php echo isset($company) ? $company : ''; ?> <br> Service Sales - Report (Pivot Table) </h4>
 	   </div>
 	</center>
 
@@ -62,16 +62,23 @@
         </div>
 
 		<table id="input" border="0" width="100%">
-		   <thead>
+		  <thead>
            <tr>
-<th> No </th> <th> Code </th> <th> Date </th> <th> Passenger </th> <th> Routing </th> <th> Routing Desc </th>
-<th> Return </th> <th> Airline </th> <th> BookCode </th> <th> Ticket No </th> <th> Vendor </th> <th> Region </th> <th> Capital </th> <th> Price </th> <th> Discount </th>
-<th> Tax </th> <th> Amount </th> <th> Profit </th> <th> Approved </th> 
+<th> No </th> <th> Code </th> <th> Date </th> <th> Due Date </th> <th> Customer </th> <th> Total </th> 
+<th> Discount </th>
+<th> Tax </th> <th> Landed Cost </th> <th> Amount </th> <th> Payment Type </th> <th> Paid Date </th> <th> Approved </th> 
+<th> Log </th>
            </tr>
            </thead>
 		  
           <tbody> 
 		  <?php 
+              
+              function customer($val)
+              {
+                  $res = new Customer_lib(); 
+                  return strtoupper($res->get_name($val));
+              }
               
               function payment($val)
               {
@@ -79,69 +86,46 @@
                   return strtoupper($res->get_name($val));
               }
               
-              function pstatus($val){ if ($val == 0){ return 'N'; }else{ return 'Y'; } }
-              function returns($val){
-                  if ($val == NULL){return '-'; }else{
-                      return tglin($val).'-'.timein($val);
-                  }
-              }
+              function approval($val){ if ($val == 0){ return 'N'; }else{ return 'Y'; } }
+              function paid($val){ if ($val == 0){ return 'N'; }else{ return 'Y'; } }
               
-              function airport($val){
-                    $lib = new Airport_lib();
-                    return $lib->get_code($val);
-              }
-                
-              function airline($val){
-                    $lib = new Airline_lib();
-                    return $lib->get_detail_field('code',$val);
-              }
-              
-              function profit($hpp,$price,$discount){
-                  return floatval($price-$discount-$hpp);
-              }
-              
-              function vendor($val){
-                  $lib = new Vendor_lib();
-                  return strtoupper($lib->get_vendor_name($val));
+              function user($val){
+                  $res = new Log_lib(); 
+                  $user = new Admin_lib(); 
+                  return $user->get_username($res->get_user($val));
               }
 			  		  
 		      $i=1; 
-			  if ($reports_item)
+			  if ($reports)
 			  {
-				foreach ($reports_item as $res)
+				foreach ($reports as $res)
 				{	
 				   echo " 
 				   <tr> 
 				       <td class=\"strongs\">".$i."</td> 
                        <td class=\"strongs\">".$res->code."</td> 
                        <td class=\"strongs\">".tglin($res->dates)."</td> 
-                       <td class=\"strongs\">".strtoupper($res->passenger.' - '.$res->idcard)."</td>
-                       <td class=\"strongs\">".airport($res->source).' - '.airport($res->destination)."</td>
-                       <td class=\"strongs\">".strtoupper($res->source_desc).' - '.strtoupper($res->destination_desc)."</td>
-                       <td class=\"strongs\">".returns($res->return_dates)."</td>
-                       <td class=\"strongs\">".airline($res->airline)."</td>
-                       <td class=\"strongs\">".$res->bookcode."</td>
-                       <td class=\"strongs\">".$res->ticketno."</td>
-                       <td class=\"strongs\">".vendor($res->vendor)."</td>
-                       <td class=\"strongs\">".strtoupper($res->country)."</td>
-                       <td class=\"strongs\">".$res->hpp."</td>
-                       <td class=\"strongs\">".$res->price."</td>
+					   <td class=\"strongs\">".tglin($res->due_date)."</td>
+                       <td class=\"strongs\">".customer($res->cust_id)."</td>
+                       <td class=\"strongs\">".$res->total."</td>
                        <td class=\"strongs\">".$res->discount."</td>
                        <td class=\"strongs\">".$res->tax."</td>
-                       <td class=\"strongs\">".$res->amount."</td>
-                       <td class=\"strongs\">".profit($res->hpp,$res->price,$res->discount)."</td>
-                       <td class=\"strongs\">".pstatus($res->approved)."</td>
+                       <td class=\"strongs\">".$res->cost."</td>
+                       <td class=\"strongs\">".floatval($res->amount)."</td>
+                       <td class=\"strongs\">".payment($res->payment_id)."</td>
+                       <td class=\"strongs\">".tglin($res->paid_date)."</td>
+                       <td class=\"strongs\">".approval($res->approved)."</td>
+                       <td class=\"strongs\">".user($res->log)."</td>
 				   </tr>";
 				   $i++;
 				}
 			 }  
 		  ?>
-		</tbody>                  
+		</tbody>       
 		</table>
-        
 	</div>
 	
-     <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('sales'); ?>"> 
+     <a style="float:left; margin:10px;" title="Back" href="<?php echo site_url('service'); ?>"> 
         <img src="<?php echo base_url().'images/back.png'; ?>"> 
      </a>
     

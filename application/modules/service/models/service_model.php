@@ -1,6 +1,6 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class Sales_model extends Custom_Model
+class Service_model extends Custom_Model
 {
     protected $logs;
     
@@ -9,8 +9,8 @@ class Sales_model extends Custom_Model
         parent::__construct();
         $this->logs = new Log_lib();
         $this->com = new Components();
-        $this->com = $this->com->get_id('sales');
-        $this->tableName = 'sales';
+        $this->com = $this->com->get_id('service');
+        $this->tableName = 'service';
     }
     
     protected $field = array('id', 'code', 'dates', 'cust_id', 'amount', 'tax', 'cost', 'discount', 'total',
@@ -79,38 +79,37 @@ class Sales_model extends Custom_Model
        if ($query->paid_date != NULL){ return FALSE; }else{ return TRUE; }
     }
     
-    function get_sales_qty_based_category($cat=0,$month=null,$year=null)
+    function get_service_qty_based_category($cat=0,$month=null,$year=null)
     {
         if (!$month){ $month = date('n'); }
         if (!$year){ $year = date('Y'); }
         
-        $this->db->select_sum('sales_item.qty', 'qtys');
+        $this->db->select_sum('service_item.qty', 'qtys');
         
-        $this->db->from('sales, sales_item, product, category');
-        $this->db->where('sales.id = sales_item.sales_id');
-        $this->db->where('sales_item.product_id = product.id');
+        $this->db->from('service, service_item, product, category');
+        $this->db->where('service.id = service_item.service_id');
+        $this->db->where('service_item.product_id = product.id');
         $this->db->where('product.category = category.id');
         
-        $this->db->where('MONTH(sales.dates)', $month);
-        $this->db->where('YEAR(sales.dates)', $year);
+        $this->db->where('MONTH(service.dates)', $month);
+        $this->db->where('YEAR(service.dates)', $year);
         $this->db->where('category.id', $cat);
-        $this->db->where('sales.confirmation', 1);
+        $this->db->where('service.confirmation', 1);
         $query = $this->db->get()->row_array();
         return intval($query['qtys']);
     }
     
     function report_category($start=null,$end=null,$confirm=null)
     {   
-        $this->db->select("sales.id, sales.code, sales.dates, sales_item.passenger, sales_item.idcard, sales_item.source, sales_item.dates as depart_dates, sales_item.source_desc,  
-                           sales_item.destination, sales_item.destination_desc, sales_item.returns, sales_item.return_dates, sales_item.ticketno,
-                           sales_item.airline, sales_item.vendor, sales_item.bookcode, sales_item.country, sales_item.price, sales_item.amount, sales_item.hpp, sales_item.discount, sales_item.tax,
-                           sales.payment_id, sales.paid_date, sales.cc_no, sales.cc_name, sales.cc_bank, sales.sender_name, sales.sender_acc, sales.sender_bank, sales.sender_amount,
-                           sales.account, sales.log ,sales.approved");
+        $this->db->select("service.id, service.code, service.dates, service_item.passenger, service_item.idcard, service_item.checkin, service_item.checkout, service_item.description,  
+                           service_item.bookcode, service_item.vendor, service_item.price, service_item.amount, service_item.hpp, service_item.discount, service_item.tax,
+                           service.payment_id, service.paid_date, service.cc_no, service.cc_name, service.cc_bank, service.sender_name, service.sender_acc, service.sender_bank, service.sender_amount,
+                           service.account, service.log ,service.approved");
         
-        $this->db->from('sales, sales_item');
-        $this->db->where('sales.id = sales_item.sales_id');
-        $this->db->where('sales.deleted', $this->deleted);
-        $this->between('sales.dates', $start, $end);
+        $this->db->from('service, service_item');
+        $this->db->where('service.id = service_item.service_id');
+        $this->db->where('service.deleted', $this->deleted);
+        $this->between('service.dates', $start, $end);
         
 //        if ($paid == '1'){ $this->db->where('paid_date IS NOT NULL'); }
 //        elseif ($paid == '0'){ $this->db->where('paid_date IS NULL'); }
