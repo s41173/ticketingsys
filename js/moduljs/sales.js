@@ -234,7 +234,7 @@ $(document).ready(function (e) {
 			        error_mess(1,res[1],0);
 					
 				    var url = sites_get +"/"+ res[2];
-		            window.location.href = url;
+					window.location.href = url;
 				}
 				else if (res[0] == 'warning'){ error_mess(2,res[1],0); }
 				else{ error_mess(3,res[1],0); }

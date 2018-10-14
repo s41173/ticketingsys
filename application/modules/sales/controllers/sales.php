@@ -272,7 +272,7 @@ class Sales extends MX_Controller
 
             $this->Sales_model->add($sales);
             echo "true|One $this->title data successfully saved!|".$this->Sales_model->counter(1);
-            $this->session->set_flashdata('message', "One $this->title data successfully saved!");
+           // $this->session->set_flashdata('message', "One $this->title data successfully saved!");
 //            redirect($this->title.'/update/'.$this->Sales_model->counter(1));
         }
         else{ $data['message'] = validation_errors(); echo "error|".validation_errors(); }
@@ -598,7 +598,7 @@ class Sales extends MX_Controller
         {     
             if ($this->input->post('cpayment') == 5){ $acc = $this->input->post('caccount');}else{ $acc = 0; }
             
-            $sales = array('cust_id' => $this->input->post('ccustomer'), 'dates' => date("Y-m-d H:i:s"), 
+            $sales = array('cust_id' => $this->input->post('ccustomer'), 'dates' => $this->input->post('tdates'),
                            'cost' => $this->input->post('tcosts'), 'code' => $this->input->post('tcode'), 'account' => $acc,
                            'due_date' => $this->input->post('tduedates'), 'payment_id' => $this->input->post('cpayment'),
                            'log' => $this->session->userdata('log'));
@@ -640,7 +640,7 @@ class Sales extends MX_Controller
         $tax      = $cm->get_id(18);
         $ar       = $cm->get_id(17);
         
-        if ($this->payment->get_name($sales->payment_id) == 'Cash'){ $account = $sales->account; }
+        if ($sales->payment_id == 5){ $account = $sales->account; }
         else{ $account = $ar; 
           // kartu piutang
           $this->trans->add('bank', 'SO', $sales->id, 'IDR', $sales->dates, $sales->amount, 0, $sales->cust_id, 'AR');

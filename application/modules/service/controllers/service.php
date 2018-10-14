@@ -272,7 +272,7 @@ class Service extends MX_Controller
 
             $this->Service_model->add($service);
             echo "true|One $this->title data successfully saved!|".$this->Service_model->counter(1);
-            $this->session->set_flashdata('message', "One $this->title data successfully saved!");
+//            $this->session->set_flashdata('message', "One $this->title data successfully saved!");
 //            redirect($this->title.'/update/'.$this->Service_model->counter(1));
         }
         else{ $data['message'] = validation_errors(); echo "error|".validation_errors(); }

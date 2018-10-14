@@ -1,4 +1,4 @@
-<meta http-equiv="Refresh" content="60">
+<meta http-equiv="Refresh" content="300">
  <!-- Datatables CSS -->
 <link href="<?php echo base_url(); ?>js/datatables/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url(); ?>js/datatables/buttons.bootstrap.min.css" rel="stylesheet" type="text/css" />
