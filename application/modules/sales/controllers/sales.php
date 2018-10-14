@@ -217,7 +217,7 @@ class Sales extends MX_Controller
         $data['title'] = $this->properti['name'].' | Administrator  '.ucwords($this->modul['title']);
         $data['h2title'] = 'Create New '.$this->modul['title'];
         $data['main_view'] = 'sales_form';
-        if ($param == 0){$data['form_action'] = site_url($this->title.'/add_process'); $data['counter'] = $this->Sales_model->counter(); }
+        if ($param == 0){$data['form_action'] = site_url($this->title.'/add_process'); $data['counter'] = $this->Sales_model->counters(); }
         else { $data['form_action'] = site_url($this->title.'/update_process'); $data['counter'] = $param; }
 	
         $data['link'] = array('link_back' => anchor($this->title,'Back', array('class' => 'btn btn-danger')));
@@ -271,7 +271,7 @@ class Sales extends MX_Controller
                            'created' => date('Y-m-d H:i:s'), 'log' => $this->session->userdata('log'));
 
             $this->Sales_model->add($sales);
-            echo "true|One $this->title data successfully saved!|".$this->Sales_model->counter(1);
+            echo "true|One $this->title data successfully saved!|".$this->Sales_model->counters(1);
            // $this->session->set_flashdata('message', "One $this->title data successfully saved!");
 //            redirect($this->title.'/update/'.$this->Sales_model->counter(1));
         }
@@ -310,7 +310,7 @@ class Sales extends MX_Controller
                 
                 $amt = floatval($this->input->post('tprice')-$this->input->post('tdiscount'));
                 $tax = floatval($this->input->post('ctax')*$amt);
-                $id = $this->sitem->counter();
+                $id = $this->sitem->counters();
                 
                 if ($this->airport->get_country($this->input->post('cdepart')) == $this->airport->get_country($this->input->post('carrived'))){
                     if ($this->airport->get_country($this->input->post('cdepart')) == 'id'){
@@ -367,7 +367,7 @@ class Sales extends MX_Controller
                 
                 $amt = floatval($this->input->post('tprice')-$this->input->post('tdiscount'));
                 $tax = floatval($this->input->post('ctax')*$amt);
-                $id = $this->sitem->counter();
+                $id = $this->sitem->counters();
                 
                 if ($this->airport->get_country($this->input->post('cdepart')) == $this->airport->get_country($this->input->post('carrived'))){
                     if ($this->airport->get_country($this->input->post('cdepart')) == 'id'){
@@ -643,7 +643,7 @@ class Sales extends MX_Controller
         if ($sales->payment_id == 5){ $account = $sales->account; }
         else{ $account = $ar; 
           // kartu piutang
-          $this->trans->add('bank', 'SO', $sales->id, 'IDR', $sales->dates, $sales->amount, 0, $sales->cust_id, 'AR');
+          $this->trans->adds('bank', 'SO', $sales->id, 'IDR', $sales->dates, $sales->amount, 0, $sales->cust_id, 'AR');
         }    
         
         $this->journalgl->new_journal($sales->id, $sales->dates,'SO','IDR','SalesOrder - '.$sales->code, $sales->amount, $this->session->userdata('log'));
@@ -670,7 +670,7 @@ class Sales extends MX_Controller
             { $this->journalgl->add_trans($jid,$ar_airline, 0, $res->hpp); /* kurang piutang atau tambah hutang airline */  
             }
             else{ $this->journalgl->add_trans($jid,$ap, 0, $res->hpp); 
-                  $this->trans->add('bank', 'PO', $res->sales_id, 'IDR', $sales->dates, 0, $res->hpp, $res->vendor, 'AP'); // kartu hutang
+                  $this->trans->adds('bank', 'PO', $res->sales_id, 'IDR', $sales->dates, 0, $res->hpp, $res->vendor, 'AP'); // kartu hutang
             }
             
             if ($res->country == 'id'){
@@ -732,7 +732,7 @@ class Sales extends MX_Controller
         $sales = $this->Sales_model->get_by_id($sid)->row();
         $cm = new Control_model();
         
-        $this->trans->add('bank', 'CR', $sales->id, 'IDR', $sales->dates, 0, $sales->amount, $sales->cust_id, 'AR'); // pelunasan kartu piutang
+        $this->trans->adds('bank', 'CR', $sales->id, 'IDR', $sales->dates, 0, $sales->amount, $sales->cust_id, 'AR'); // pelunasan kartu piutang
         
         $ar = $cm->get_id(17);
         $account = $sales->account;

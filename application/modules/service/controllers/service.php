@@ -217,7 +217,7 @@ class Service extends MX_Controller
         $data['title'] = $this->properti['name'].' | Administrator  '.ucwords($this->modul['title']);
         $data['h2title'] = 'Create New '.$this->modul['title'];
         $data['main_view'] = 'service_form';
-        if ($param == 0){$data['form_action'] = site_url($this->title.'/add_process'); $data['counter'] = $this->Service_model->counter(); }
+        if ($param == 0){$data['form_action'] = site_url($this->title.'/add_process'); $data['counter'] = $this->Service_model->counters(); }
         else { $data['form_action'] = site_url($this->title.'/update_process'); $data['counter'] = $param; }
 	
         $data['link'] = array('link_back' => anchor($this->title,'Back', array('class' => 'btn btn-danger')));
@@ -271,7 +271,7 @@ class Service extends MX_Controller
                            'created' => date('Y-m-d H:i:s'), 'log' => $this->session->userdata('log'));
 
             $this->Service_model->add($service);
-            echo "true|One $this->title data successfully saved!|".$this->Service_model->counter(1);
+            echo "true|One $this->title data successfully saved!|".$this->Service_model->counters(1);
 //            $this->session->set_flashdata('message', "One $this->title data successfully saved!");
 //            redirect($this->title.'/update/'.$this->Service_model->counter(1));
         }
@@ -305,7 +305,7 @@ class Service extends MX_Controller
                 
                 $amt = floatval($this->input->post('tprice')-$this->input->post('tdiscount'));
                 $tax = floatval($this->input->post('ctax')*$amt);
-                $id = $this->sitem->counter();
+                $id = $this->sitem->counters();
                 
                 $service = array('id' => $id, 'service_id' => $sid, 'passenger' => $this->input->post('tpassenger'), 'idcard' => $this->input->post('tidcard'),
                                'checkin' => setnull($this->input->post('tcheckin')), 'checkout' => setnull($this->input->post('tcheckout')), 'description' => $this->input->post('tdesc'),
@@ -616,7 +616,7 @@ class Service extends MX_Controller
         if ($this->payment->get_name($service->payment_id) == 'Cash'){ $account = $service->account; }
         else{ $account = $ar; 
           // kartu piutang
-          $this->trans->add('bank', 'SSO', $service->id, 'IDR', $service->dates, $service->amount, 0, $service->cust_id, 'AR');
+          $this->trans->adds('bank', 'SSO', $service->id, 'IDR', $service->dates, $service->amount, 0, $service->cust_id, 'AR');
         }    
         
         $this->journalgl->new_journal($service->id, $service->dates,'SSO','IDR','ServiceOrder - '.$service->code, $service->amount, $this->session->userdata('log'));
@@ -637,7 +637,7 @@ class Service extends MX_Controller
             
             $this->journalgl->add_trans($jid,$ap, 0, $res->hpp); // hutang kredit
             
-            $this->trans->add('bank', 'SPO', $res->service_id, 'IDR', $service->dates, 0, $res->hpp, $res->vendor, 'AP'); // kartu hutang
+            $this->trans->adds('bank', 'SPO', $res->service_id, 'IDR', $service->dates, 0, $res->hpp, $res->vendor, 'AP'); // kartu hutang
             
             $this->journalgl->add_trans($jid,$hpp, $res->hpp, 0); // tambah (hpp) service
             $this->journalgl->add_trans($jid,$sales_service,0,$res->price); // tambah penjualan service
@@ -693,7 +693,7 @@ class Service extends MX_Controller
         $service = $this->Service_model->get_by_id($sid)->row();
         $cm = new Control_model();
         
-        $this->trans->add('bank', 'SCR', $service->id, 'IDR', $service->dates, 0, $service->amount, $service->cust_id, 'AR'); // pelunasan kartu piutang
+        $this->trans->adds('bank', 'SCR', $service->id, 'IDR', $service->dates, 0, $service->amount, $service->cust_id, 'AR'); // pelunasan kartu piutang
         
         $ar = $cm->get_id(17);
         $account = $service->account;

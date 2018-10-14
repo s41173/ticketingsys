@@ -310,7 +310,7 @@ class Apc extends MX_Controller
         $data['form_action_item'] = site_url($this->title.'/add_item/');
         
         $data['currency'] = $this->currency->combo();
-        $data['code'] = $this->Apc_model->counter();
+        $data['code'] = $this->Apc_model->counters();
         $data['id'] = $this->max_id();
         $data['user'] = $this->session->userdata("username");
         $data['account'] = $this->account->combo_asset();
@@ -335,7 +335,7 @@ class Apc extends MX_Controller
         $data['main_view'] = 'cash_form';
 	$data['form_action'] = site_url($this->title.'/add_process');
 	$data['currency'] = $this->currency->combo();
-        $data['code'] = $this->Apc_model->counter();
+        $data['code'] = $this->Apc_model->counters();
         $data['user'] = $this->session->userdata("username");
 
 	// Form validation

@@ -74,7 +74,7 @@ class Service_item_model extends Custom_Model
        if ($query > 0){ return TRUE; }else{ return FALSE; }
     }
     
-    function counter()
+    function counters()
     {
         $this->db->select_max('id');
         $test = $this->db->get($this->tableName)->row_array();

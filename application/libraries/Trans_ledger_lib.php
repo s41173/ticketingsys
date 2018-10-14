@@ -21,7 +21,7 @@ class Trans_ledger_lib extends Custom_Model {
        if ($res > 0){ return FALSE; }else { return TRUE; }
     }
     
-    function add($acc, $code, $no, $cur='IDR', $date, $debit=0, $credit=0, $cust, $type='AR')
+    function adds($acc, $code, $no, $cur='IDR', $date, $debit=0, $credit=0, $cust, $type='AR')
     {  
         if ($this->cek($code, $no, $cur, $date, $type) == TRUE)
         {

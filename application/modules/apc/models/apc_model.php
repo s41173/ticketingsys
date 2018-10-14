@@ -39,7 +39,7 @@ class Apc_model extends Custom_Model
         return $this->db->get();
     }
     
-    function counter()
+    function counters()
     {
         $this->db->select_max('no');
         $test = $this->db->get($this->tableName)->row_array();

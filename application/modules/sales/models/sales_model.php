@@ -65,7 +65,7 @@ class Sales_model extends Custom_Model
         return $this->db->get(); 
     }
     
-    function counter($type=0)
+    function counters($type=0)
     {
        $this->db->select_max('id');
        $query = $this->db->get($this->tableName)->row_array(); 
