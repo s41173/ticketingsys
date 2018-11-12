@@ -29,10 +29,10 @@ class Report_reference extends MX_Controller
 
     function index()
     {    
-      $query = $this->db->query("call addaccountsp(3)");  
-      if ($query == true){ echo 'berhasil'; }else{ echo 'gagal'; }
+//      $query = $this->db->query("call addaccountsp(3)");  
+//      if ($query == true){ echo 'berhasil'; }else{ echo 'gagal'; }
 //      echo $query->affected_rows;
-      // $this->main_panel();
+       $this->main_panel();
     }
 
     function main_panel()
