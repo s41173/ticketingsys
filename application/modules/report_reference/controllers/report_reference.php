@@ -15,22 +15,31 @@ class Report_reference extends MX_Controller
         
         $this->load->library('user_agent');
         $this->properti = $this->property->get();
+        
+        $this->member = new Member_lib();
+        $this->member = $this->member->get_details($this->session->userdata('member'));
+        
+        $this->period = new Period_lib();
+        $this->period = $this->period->get($this->session->userdata('member'));
     }
 
     var $title = 'report_reference';
     var $limit = null;
-    private $properti,$vendor,$customer;
+    private $properti,$member,$period;
 
     function index()
     {    
-       $this->main_panel();
+      $query = $this->db->query("call addaccountsp(3)");  
+      if ($query == true){ echo 'berhasil'; }else{ echo 'gagal'; }
+//      echo $query->affected_rows;
+      // $this->main_panel();
     }
 
     function main_panel()
     {
        $this->acl->otentikasi1($this->title); 
 //       
-       $data['name'] = $this->properti['name'];
+       $data['name'] = $this->member->company;
        $data['title'] = $this->properti['name'].' | Administrator  '.ucwords('Main Panel');
        $data['h2title'] = "Financial Statement Reference";
 
@@ -38,11 +47,8 @@ class Report_reference extends MX_Controller
        $data['user_agent'] = $this->user_agent();
        $data['main_view'] = 'report_reference/report_reference_view';
        
-       // period
-        $ps = new Period();
-        $ps = $ps->get();
-        $data['month'] = get_month($ps->month);
-        $data['year'] = $ps->year;
+       $data['month'] = get_month($this->period->month);
+       $data['year'] = $this->period->year;
 
        // chart json
        $data['asset'] = site_url()."/report_reference/get_asset/".$this->input->post('cassettype');
@@ -88,8 +94,8 @@ class Report_reference extends MX_Controller
     
     function get_asset($month=null)
     {        
-        $ps = new Period();
-        $ps = $ps->get();
+        $ps = new Period_lib();
+        $ps = $ps->get($this->session->userdata('member'));
 
         if (!$month){ $month = $ps->month; }
         //        $data = $this->db->select('OrderDate, ProductName, Quantity')->from('coba')->get()->result();
@@ -125,31 +131,31 @@ class Report_reference extends MX_Controller
     private function get_trans($cur,$cla,$month,$year)
     {
         $model = new Account_model();
-        $begin = $model->get_begining_balance_classification_by_month($cur,$cla,$month,$year);
-        $trans = $model->get_balance_by_classification($cur,$cla,$month,$year,$month,$year);
-        return intval($begin+$trans);
+        $begin = $model->get_begining_balance_classification_by_month($cur,$cla,$month,$year, $this->session->userdata('member'));
+        $trans = $model->get_balance_by_classification($cur,$cla,$month,$year,$month,$year,$this->session->userdata('member'));
+        return floatval($begin+$trans);
     }
     
     function get_operating()
     {        
-        $ps = new Period();
-        $ps = $ps->get();
+        $ps = new Period_lib();
+        $ps = $ps->get($this->session->userdata('member'));
 
         //        $data = $this->db->select('OrderDate, ProductName, Quantity')->from('coba')->get()->result();
         $model = new Account_model();
         
-        $jan = $model->get_end_balance('IDR',21,1,$ps->year);
-        $feb = $model->get_end_balance('IDR',21,2,$ps->year);
-        $mar = $model->get_end_balance('IDR',21,3,$ps->year);
-        $apr = $model->get_end_balance('IDR',21,4,$ps->year);
-        $may = $model->get_end_balance('IDR',21,5,$ps->year);
-        $jun = $model->get_end_balance('IDR',21,6,$ps->year);
-        $jul = $model->get_end_balance('IDR',21,7,$ps->year);
-        $aug = $model->get_end_balance('IDR',21,8,$ps->year);
-        $sep = $model->get_end_balance('IDR',21,9,$ps->year);
-        $oct = $model->get_end_balance('IDR',21,10,$ps->year);
-        $nov = $model->get_end_balance('IDR',21,11,$ps->year);
-        $dec = $model->get_end_balance('IDR',21,12,$ps->year);
+        $jan = $model->get_end_balance('IDR',21,1,$ps->year,$this->session->userdata('member'));
+        $feb = $model->get_end_balance('IDR',21,2,$ps->year,$this->session->userdata('member'));
+        $mar = $model->get_end_balance('IDR',21,3,$ps->year,$this->session->userdata('member'));
+        $apr = $model->get_end_balance('IDR',21,4,$ps->year,$this->session->userdata('member'));
+        $may = $model->get_end_balance('IDR',21,5,$ps->year,$this->session->userdata('member'));
+        $jun = $model->get_end_balance('IDR',21,6,$ps->year,$this->session->userdata('member'));
+        $jul = $model->get_end_balance('IDR',21,7,$ps->year,$this->session->userdata('member'));
+        $aug = $model->get_end_balance('IDR',21,8,$ps->year,$this->session->userdata('member'));
+        $sep = $model->get_end_balance('IDR',21,9,$ps->year,$this->session->userdata('member'));
+        $oct = $model->get_end_balance('IDR',21,10,$ps->year,$this->session->userdata('member'));
+        $nov = $model->get_end_balance('IDR',21,11,$ps->year,$this->session->userdata('member'));
+        $dec = $model->get_end_balance('IDR',21,12,$ps->year,$this->session->userdata('member'));
         
         $data = array(
                     array("label" => "Jan", "y" => intval($jan)),
@@ -171,8 +177,8 @@ class Report_reference extends MX_Controller
     
     function get_asset12()
     {        
-        $ps = new Period();
-        $ps = $ps->get();
+        $ps = new Period_lib();
+        $ps = $ps->get($this->session->userdata('member'));
 
         //        $data = $this->db->select('OrderDate, ProductName, Quantity')->from('coba')->get()->result();
         
@@ -196,12 +202,12 @@ class Report_reference extends MX_Controller
     
     function get_cash_bank()
     {        
-        $ps = new Period();
-        $ps = $ps->get();
+        $ps = new Period_lib();
+        $ps = $ps->get($this->session->userdata('member'));
 
         //        $data = $this->db->select('OrderDate, ProductName, Quantity')->from('coba')->get()->result();
         $model = new Account_model();
-        $data = $model->get_cash_group_account()->result();
+        $data = $model->get_cash_group_account($this->session->userdata('member'))->result();
         
         $datax = array();
         foreach ($data as $res) 
@@ -218,7 +224,7 @@ class Report_reference extends MX_Controller
        $model = new Account_model();
        $vamount = $model->get_balance($acc, $month, $year)->row_array();
        $vamount = intval($vamount['vamount']);
-       $start = $model->get_start_balance('IDR',$acc,$month,$year);
+       $start = $model->get_start_balance('IDR',$acc,$month,$year,$this->session->userdata('member'));
        return intval($start+$vamount);
     }
     
@@ -226,16 +232,16 @@ class Report_reference extends MX_Controller
     {
        $model = new Account_model();
         
-       $kas = $model->get_end_balance_classification('IDR', 7, $month, $year); // kas
-       $bank = $model->get_end_balance_classification('IDR', 8, $month, $year); // bank
-       $biayadimuka = $model->get_end_balance_classification('IDR', 13, $month, $year); // biayadimuka
-       $piutangusaha = $model->get_end_balance_classification('IDR', 20, $month, $year); // piutangusaha
-       $piutangnonusaha = $model->get_end_balance_classification('IDR', 27, $month, $year); // piutangnonusaha
-       $persediaan = $model->get_end_balance_classification('IDR', 14, $month, $year); // persediaan
-       $investasi = $model->get_end_balance_classification('IDR', 29, $month, $year); // investasi
-       $hartawujud = $model->get_end_balance_classification('IDR', 26, $month, $year); // hartawujud
-       $hartatakwujud = $model->get_end_balance_classification('IDR', 30, $month, $year); // hartatakwujud
-       $hartalain = $model->get_end_balance_classification('IDR', 31, $month, $year); // hartalain 
+       $kas = $model->get_end_balance_classification('IDR', 7, $month, $year, $this->session->userdata('member')); // kas
+       $bank = $model->get_end_balance_classification('IDR', 8, $month, $year, $this->session->userdata('member')); // bank
+       $biayadimuka = $model->get_end_balance_classification('IDR', 13, $month, $year, $this->session->userdata('member')); // biayadimuka
+       $piutangusaha = $model->get_end_balance_classification('IDR', 20, $month, $year, $this->session->userdata('member')); // piutangusaha
+       $piutangnonusaha = $model->get_end_balance_classification('IDR', 27, $month, $year, $this->session->userdata('member')); // piutangnonusaha
+       $persediaan = $model->get_end_balance_classification('IDR', 14, $month, $year, $this->session->userdata('member')); // persediaan
+       $investasi = $model->get_end_balance_classification('IDR', 29, $month, $year, $this->session->userdata('member')); // investasi
+       $hartawujud = $model->get_end_balance_classification('IDR', 26, $month, $year, $this->session->userdata('member')); // hartawujud
+       $hartatakwujud = $model->get_end_balance_classification('IDR', 30, $month, $year, $this->session->userdata('member')); // hartatakwujud
+       $hartalain = $model->get_end_balance_classification('IDR', 31, $month, $year, $this->session->userdata('member')); // hartalain 
        
        return intval($kas+$bank+$biayadimuka+$piutangusaha+$piutangnonusaha+$persediaan+$investasi+$hartawujud+
                      $hartatakwujud+$hartalain);
@@ -291,7 +297,7 @@ class Report_reference extends MX_Controller
     private function get_trans_month($cur,$cla,$month,$year)
     {
         $model = new Account_model();
-        $trans = $model->get_balance_by_classification($cur,$cla,$month,$year,$month,$year);
+        $trans = $model->get_balance_by_classification($cur,$cla,$month,$year,$month,$year, $this->session->userdata('member'));
         return intval($trans);
     }
     
@@ -323,11 +329,11 @@ class Report_reference extends MX_Controller
     {
        $model = new Account_model();
        
-       $hpp = intval($model->get_balance_by_classification($cur,15,$month,$year,$month,$year));
-       $operational = intval($model->get_balance_by_classification($cur,19,$month,$year,$month,$year));
-       $nonoperational = intval($model->get_balance_by_classification($cur,24,$month,$year,$month,$year));
-       $othercost = intval($model->get_balance_by_classification($cur,17,$month,$year,$month,$year));
-       $outcost = intval($model->get_balance_by_classification($cur,25,$month,$year,$month,$year));
+       $hpp = intval($model->get_balance_by_classification($cur,15,$month,$year,$month,$year, $this->session->userdata('member')));
+       $operational = intval($model->get_balance_by_classification($cur,19,$month,$year,$month,$year, $this->session->userdata('member')));
+       $nonoperational = intval($model->get_balance_by_classification($cur,24,$month,$year,$month,$year, $this->session->userdata('member')));
+       $othercost = intval($model->get_balance_by_classification($cur,17,$month,$year,$month,$year, $this->session->userdata('member')));
+       $outcost = intval($model->get_balance_by_classification($cur,25,$month,$year,$month,$year, $this->session->userdata('member')));
               
        return intval($hpp+$operational+$nonoperational+$othercost+$outcost);
     }

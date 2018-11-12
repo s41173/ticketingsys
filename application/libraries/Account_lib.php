@@ -13,38 +13,42 @@ class Account_lib extends Main_model {
     private $balance;
     
     protected $field = array('id', 'classification_id', 'currency', 'code', 'name', 'alias', 'acc_no', 'bank', 
-                             'status', 'default', 'bank_stts', 'created', 'updated', 'deleted');
+                             'status', 'defaults', 'bank_stts', 'created', 'updated', 'deleted');
     
-    function valid_coa($coa){
+    function valid_coa($member=0,$coa){
         
         $this->db->where('code', $coa);
+        $this->db->where('member_id', $member);
         $val = $this->db->get($this->tableName)->num_rows();
         if ($val > 0){ return TRUE; }else{ return FALSE; }
     }
     
-    function get()
+    function get($member=0)
     {
        $this->db->select($this->field); 
+       $this->db->where('member_id', $member);
        $this->db->where('deleted', $this->deleted);
        return $this->db->get($this->tableName)->result();
     }
 
-    function get_id($name=null)
+    function get_id($member=0,$name=null)
     {
         if ($name)
         {
             $this->db->select('id,name');
             $this->db->where('name', $name);
+            $this->db->where('member_id', $member);
             $val = $this->db->get($this->tableName)->row();
             return $val->id;
         }
     }
 
-    function get_id_code($code=null)
+    function get_id_code($member=0,$code=null)
     {
         if ($code)
         {
-            $this->db->select('id,name,code');
+            $this->db->select($this->field);
+            $this->db->where('member_id', $member);
             $this->db->where('code', $code);
             $val = $this->db->get($this->tableName)->row();
             if ($val){ return $val->id; }
@@ -55,7 +59,7 @@ class Account_lib extends Main_model {
     {
         if ($id)
         {
-            $this->db->select('id,name,code');
+            $this->db->select($this->field);
             $this->db->where('id', $id);
             $val = $this->db->get($this->tableName)->row();
             if ($val){ return $val->code; }
@@ -64,7 +68,7 @@ class Account_lib extends Main_model {
 
     function get_name($id=null)
     {
-        $this->db->select('id,name');
+        $this->db->select($this->field);
         $this->db->where('id', $id);
         $val = $this->db->get($this->tableName)->row();
         if ($val){ return $val->name; }
@@ -72,7 +76,7 @@ class Account_lib extends Main_model {
 	
     function get_cur($id=null)
     {
-        $this->db->select('id,name,currency');
+        $this->db->select($this->field);
         $this->db->where('id', $id);
         $val = $this->db->get($this->tableName)->row();
         return $val->currency;
@@ -94,29 +98,32 @@ class Account_lib extends Main_model {
         if ($val > 0){ return FALSE;}else{ return TRUE; }
     }
 
-    function combo()
+    function combo($member=0)
     {
-        $this->db->select('id, name, code');
+        $this->db->select($this->field);
+        $this->db->where('member_id', $member);
         $this->db->where('status', 1);
         $val = $this->db->get($this->tableName)->result();
         foreach($val as $row){$data['options'][$row->code] = $row->name;}
         return $data;
     }
     
-    function combo_based_classi($cla)
+    function combo_based_classi($member=0,$cla)
     {
         $this->db->select('id, name, code');
         $this->db->where('classification_id', $cla);
+        $this->db->where('member_id', $member);
         $this->db->where('status', 1);
         $val = $this->db->get($this->tableName)->result();
         foreach($val as $row){$data['options'][$row->id] = $row->code.' : '.$row->name;}
         return $data;
     }
     
-    function combo_asset()
+    function combo_asset($member=0)
     {
         $val = array('7', '8');
         $this->db->select('id, name, code');
+        $this->db->where('member_id', $member);
 //        $this->db->where_in('classification_id', $val);
         $this->db->where('status', 1);
         $this->db->where('bank_stts', 1);
@@ -125,9 +132,10 @@ class Account_lib extends Main_model {
         return $data;
     }
 
-    function combo_all()
+    function combo_all($member=0)
     {
         $this->db->select('id, name, code');
+        $this->db->where('member_id', $member);
         $this->db->where('status', 1);
         $val = $this->db->get($this->tableName)->result();
         $data['options'][''] = '-- All --';

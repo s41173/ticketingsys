@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url'] = "http://".$_SERVER["SERVER_NAME"]."/ticketadministrator/";
+$config['base_url'] = "http://".$_SERVER["SERVER_NAME"]."/glsaasadmin/";
 
 /*
 |--------------------------------------------------------------------------

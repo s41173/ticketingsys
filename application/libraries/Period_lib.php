@@ -10,16 +10,18 @@ class Period_lib extends Main_model {
 
     private $ci;
 
-    protected $field = array('id', 'month', 'year', 'closing_month', 'start_month', 'start_year', 'status', 'created', 'updated', 'deleted');
+    protected $field = array('id', 'member_id', 'month', 'year', 'closing_month', 'start_month', 'start_year', 'status', 'created', 'updated', 'deleted');
 
 
-    public function get($type=null)
+    public function get($member=0,$type=null)
     {
        $this->db->select($this->field);
+       $this->db->where('member_id', $member);
        $val = $this->db->get($this->tableName)->row();
-       if ($type == 'month'){ return $val->month; }
-       elseif ($type == 'year') { return $val->year; }
-       else { return $val; }
+       if ($val){
+          if ($type == 'month'){ return $val->month; } elseif ($type == 'year') { return $val->year; }
+          else { return $val; }
+       }
     }
     
     function update_period($uid, $users)

@@ -39,6 +39,12 @@ class Login_model extends CI_Model {
         $query = $this->db->get_where('role', array('name' => $role), 1, 0)->row();
         return $query->rules;
     }
+    
+    function get_member($username)
+    {
+        $query = $this->db->get_where($this->table, array('username' => $username), 1, 0)->row();
+        return $query->member_id;
+    }
 
     function get_email($username)
     {
@@ -50,12 +56,6 @@ class Login_model extends CI_Model {
     {
         $query = $this->db->get_where($this->table, array('username' => $username), 1, 0)->row();
         return $query->password;
-    }
-    
-    function get_branch($username)
-    {
-        $query = $this->db->get_where($this->table, array('username' => $username), 1, 0)->row();
-        if ($query->branch_id == 0){ return null; }else{ return $query->branch_id; }
     }
 
 }

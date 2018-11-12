@@ -546,6 +546,7 @@ class Sales extends MX_Controller
        $data['log'] = $this->session->userdata('log');
        $data['cost'] = $sales->cost;
        $data['amount'] = $sales->amount;
+       $data['payment'] = $this->payment->get_name($sales->payment_id);
 
        // sales item
        $data['items'] = $this->sitem->get_last_item($sales->id)->result();
@@ -653,7 +654,6 @@ class Sales extends MX_Controller
         if ($sales->tax > 0){ $this->journalgl->add_trans($jid,$tax,0,$sales->tax); } // pajak penjualan
         if ($sales->cost > 0){ $this->journalgl->add_trans($jid,$landed,0,$sales->cost); } // landed costs
         if ($sales->discount > 0){ $this->journalgl->add_trans($jid,$discount,$sales->discount,0); } // discount
-        
         
         $items = $this->sitem->get_last_item($sid)->result();
         

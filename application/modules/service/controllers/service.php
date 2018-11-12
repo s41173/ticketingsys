@@ -571,7 +571,7 @@ class Service extends MX_Controller
         {     
             if ($this->input->post('cpayment') == 5){ $acc = $this->input->post('caccount');}else{ $acc = 0; }
             
-            $service = array('cust_id' => $this->input->post('ccustomer'), 'dates' => date("Y-m-d H:i:s"), 
+            $service = array('cust_id' => $this->input->post('ccustomer'), 'dates' => $this->input->post('tdates'), 
                            'cost' => $this->input->post('tcosts'), 'code' => $this->input->post('tcode'), 'account' => $acc,
                            'due_date' => $this->input->post('tduedates'), 'payment_id' => $this->input->post('cpayment'),
                            'log' => $this->session->userdata('log'));
@@ -598,7 +598,7 @@ class Service extends MX_Controller
              $service->cc_no.'|'.$service->cc_name.'|'.$service->cc_bank.'|'.$service->paid_date;
     }
         
-    function create_journal($sid)
+    private function create_journal($sid)
     {
         $this->journalgl->remove_journal('SSO', $sid);
         $this->journalgl->remove_journal('SCR', '00'.$sid);
@@ -613,7 +613,7 @@ class Service extends MX_Controller
         $tax      = $cm->get_id(18);
         $ar       = $cm->get_id(17);
         
-        if ($this->payment->get_name($service->payment_id) == 'Cash'){ $account = $service->account; }
+        if ($service->payment_id == 5){ $account = $service->account; }
         else{ $account = $ar; 
           // kartu piutang
           $this->trans->adds('bank', 'SSO', $service->id, 'IDR', $service->dates, $service->amount, 0, $service->cust_id, 'AR');

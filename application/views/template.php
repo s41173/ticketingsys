@@ -59,8 +59,8 @@
         <div class="">
           <div class="page-title">
           
-                <div class="title_left">
-                  <h3> Dashboard - <?php echo isset($h2title) ? $h2title : ''; ?> </h3>
+                <div class="title_left" style="width:100%;">
+                  <h3 style="margin-left:20px;"> Dashboard - <?php echo isset($h2title) ? $h2title : ''; ?> </h3>
                 </div>
                 
                 <div id="loading" class="loader"></div> 

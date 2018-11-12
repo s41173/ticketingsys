@@ -18,13 +18,16 @@ class Report extends MX_Controller
         $this->currency   = $this->load->library('currency_lib');
         $this->user       = $this->load->library('admin_lib');
         $this->account    = $this->load->library('account_lib');
+        
+        $this->member = new Member_lib();
+        $this->member = $this->member->get_details($this->session->userdata('member'));
 
         $this->load->library('fusioncharts');
         $this->swfCharts  = base_url().'public/flash/Column3D.swf';
     }
 
     private $properti, $modul, $title, $currency, $account;
-    private $user;
+    private $user, $member;
 
     function index()
     {
@@ -57,7 +60,7 @@ class Report extends MX_Controller
         $year = $this->input->post('tsyear');
         $eyear = $this->input->post('teyear');
         $cur = $this->input->post('ccurrency');
-        $data['company'] = '';
+        $data['company'] = $this->member->company;
         $rtype = $this->input->post('ctype');
         $file = $this->input->post('cfile');
         
@@ -65,7 +68,7 @@ class Report extends MX_Controller
         $data['emonths'] = $emonth;
         $data['years'] = $year;
         $data['eyears'] = $eyear;
-        $data['currency'] = $cur;
+        $data['currency'] = strtoupper($cur);
         
         $this->form_validation->set_rules('csmonth', 'Start Month', 'required|callback_valid_report');
         $this->form_validation->set_rules('cemonth', 'End Month', 'required|callback_valid_report');
@@ -74,15 +77,15 @@ class Report extends MX_Controller
         
         if ($this->form_validation->run($this) == TRUE)
         {
-            $data['income'] = $this->am->get_account(16)->result(); // pendapatan usaha
-            $data['outincome'] = $this->am->get_account(21)->result(); // Pendapatan Luar Usaha
-            $data['frontincome'] = $this->am->get_account(37)->result(); // Pendapatan Usaha Lainnya
+            $data['income'] = $this->am->get_account($this->session->userdata('member'),16)->result(); // pendapatan usaha
+            $data['outincome'] = $this->am->get_account($this->session->userdata('member'),21)->result(); // Pendapatan Luar Usaha
+            $data['frontincome'] = $this->am->get_account($this->session->userdata('member'),37)->result(); // Pendapatan Usaha Lainnya
 
-            $data['hpp'] = $this->am->get_account(15)->result(); // biaya usaha
-            $data['operationalcost'] = $this->am->get_account(19)->result(); // Biaya adm / umum
-            $data['nonoperationalcost'] = $this->am->get_account(24)->result(); // Biaya Non Operasional 
-            $data['othercost'] = $this->am->get_account(17)->result(); // Biaya Usaha Lain
-            $data['outcost'] = $this->am->get_account(25)->result();  // Pengeluaran Luar Usaha 
+            $data['hpp'] = $this->am->get_account($this->session->userdata('member'),15)->result(); // biaya usaha
+            $data['operationalcost'] = $this->am->get_account($this->session->userdata('member'),19)->result(); // Biaya adm / umum
+            $data['nonoperationalcost'] = $this->am->get_account($this->session->userdata('member'),24)->result(); // Biaya Non Operasional 
+            $data['othercost'] = $this->am->get_account($this->session->userdata('member'),17)->result(); // Biaya Usaha Lain
+            $data['outcost'] = $this->am->get_account($this->session->userdata('member'),25)->result();  // Pengeluaran Luar Usaha 
             
             $fname = null;
             if ($rtype == 0){ $fname = 'labarugi_standard'; }
@@ -157,13 +160,13 @@ class Report extends MX_Controller
         $year = $this->input->post('tsyear');
         $eyear = $this->input->post('teyear');
         $cur = $this->input->post('ccurrency');
-        $data['company'] = $this->properti['name'];
+        $data['company'] = $this->member->company;
         
         $data['months']  = $month;
         $data['emonths'] = $emonth;
         $data['years'] = $year;
         $data['eyears'] = $eyear;
-        $data['currency'] = $cur;
+        $data['currency'] = strtoupper($cur);
         $rtype = $this->input->post('ctype');
         $file = $this->input->post('cfile');
         
@@ -175,27 +178,27 @@ class Report extends MX_Controller
         if ($this->form_validation->run($this) == TRUE)
         {
                 // harta
-           $data['kas'] = $this->am->get_all_account(7)->result(); // kas
-           $data['bank'] = $this->am->get_all_account(8)->result(); // Bank
-           $data['piutangusaha'] = $this->am->get_all_account(20)->result(); // Piutang Usaha
-           $data['piutangnonusaha'] = $this->am->get_all_account(27)->result(); // Piutang Non UsahaS
-           $data['persediaan'] = $this->am->get_all_account(14)->result(); // Persediaan
-           $data['biayadimuka'] = $this->am->get_all_account(13)->result(); // biayadimuka
-           $data['investasi'] = $this->am->get_all_account(29)->result(); // Investasi Jangka Panjang
-           $data['hartawujud'] = $this->am->get_all_account(26)->result(); // Harta Tetap Berwujud
-           $data['hartatakwujud'] = $this->am->get_all_account(30)->result(); // Harta Tetap Tak Berwujud
-           $data['hartalain'] = $this->am->get_all_account(31)->result(); // Harta Lain
+           $data['kas'] = $this->am->get_all_account($this->session->userdata('member'),7)->result(); // kas
+           $data['bank'] = $this->am->get_all_account($this->session->userdata('member'),8)->result(); // Bank
+           $data['piutangusaha'] = $this->am->get_all_account($this->session->userdata('member'),20)->result(); // Piutang Usaha
+           $data['piutangnonusaha'] = $this->am->get_all_account($this->session->userdata('member'),27)->result(); // Piutang Non UsahaS
+           $data['persediaan'] = $this->am->get_all_account($this->session->userdata('member'),14)->result(); // Persediaan
+           $data['biayadimuka'] = $this->am->get_all_account($this->session->userdata('member'),13)->result(); // biayadimuka
+           $data['investasi'] = $this->am->get_all_account($this->session->userdata('member'),29)->result(); // Investasi Jangka Panjang
+           $data['hartawujud'] = $this->am->get_all_account($this->session->userdata('member'),26)->result(); // Harta Tetap Berwujud
+           $data['hartatakwujud'] = $this->am->get_all_account($this->session->userdata('member'),30)->result(); // Harta Tetap Tak Berwujud
+           $data['hartalain'] = $this->am->get_all_account($this->session->userdata('member'),31)->result(); // Harta Lain
            
            // kewajiban
-           $data['hutangusaha'] = $this->am->get_all_account(10)->result(); // hutang usaha
-           $data['pendapatandimuka'] = $this->am->get_all_account(34)->result(); // pendapatan dimuka
-           $data['hutangpanjang'] = $this->am->get_all_account(35)->result(); // hutang jangka panjang
-           $data['hutangnonusaha'] = $this->am->get_all_account(32)->result(); // hutang non usaha
-           $data['hutanglain'] = $this->am->get_all_account(36)->result(); // hutanglain
+           $data['hutangusaha'] = $this->am->get_all_account($this->session->userdata('member'),10)->result(); // hutang usaha
+           $data['pendapatandimuka'] = $this->am->get_all_account($this->session->userdata('member'),34)->result(); // pendapatan dimuka
+           $data['hutangpanjang'] = $this->am->get_all_account($this->session->userdata('member'),35)->result(); // hutang jangka panjang
+           $data['hutangnonusaha'] = $this->am->get_all_account($this->session->userdata('member'),32)->result(); // hutang non usaha
+           $data['hutanglain'] = $this->am->get_all_account($this->session->userdata('member'),36)->result(); // hutanglain
 
            //modal
-           $data['modal'] = $this->am->get_all_account(22)->result(); // modal
-           $data['laba'] = $this->am->get_all_account(18)->result(); // laba
+           $data['modal'] = $this->am->get_all_account($this->session->userdata('member'),22)->result(); // modal
+           $data['laba'] = $this->am->get_all_account($this->session->userdata('member'),18)->result(); // laba
            
             $fname = null;
             if ($rtype == 0){ $fname = 'neraca_standard'; }
@@ -297,44 +300,44 @@ class Report extends MX_Controller
         $start = $this->input->post('tstart');
         $end = $this->input->post('tend');
         $cur = $this->input->post('ccurrency');
-        $data['company'] = $this->properti['name'];
+        $data['company'] = $this->member->company;
         
         $data['start'] = $start;
         $data['end']   = $end;
         $data['period'] = tglin($start).' - '.tglin($end);
-        $data['cur'] = $cur;
+        $data['cur'] = strtoupper($cur);
         $file = $this->input->post('cfile');
             
         // operating activities
-        $data['piutangusaha'] = $this->am->get_cash_flow_acc($cur,20,$start,$end)->result();
-        $data['piutangnonusaha'] = $this->am->get_cash_flow_acc($cur,27,$start,$end)->result();
-        $data['persediaan'] = $this->am->get_cash_flow_acc($cur,14,$start,$end)->result();
-        $data['hutangusaha'] = $this->am->get_cash_flow_acc($cur,10,$start,$end)->result();
-        $data['pendapatanmuka'] = $this->am->get_cash_flow_acc($cur,34,$start,$end)->result();
-        $data['pendapatanusaha'] = $this->am->get_cash_flow_acc($cur,16,$start,$end)->result();
-        $data['pendapatanusahalain'] = $this->am->get_cash_flow_acc($cur,37,$start,$end)->result();
-        $data['biayausaha'] = $this->am->get_cash_flow_acc($cur,15,$start,$end)->result();
-        $data['biayausahalain'] = $this->am->get_cash_flow_acc($cur,17,$start,$end)->result();
-        $data['biayaadm'] = $this->am->get_cash_flow_acc($cur,19,$start,$end)->result();
+        $data['piutangusaha'] = $this->am->get_cash_flow_acc($cur,20,$start,$end, $this->session->userdata('member'))->result();
+        $data['piutangnonusaha'] = $this->am->get_cash_flow_acc($cur,27,$start,$end, $this->session->userdata('member'))->result();
+        $data['persediaan'] = $this->am->get_cash_flow_acc($cur,14,$start,$end, $this->session->userdata('member'))->result();
+        $data['hutangusaha'] = $this->am->get_cash_flow_acc($cur,10,$start,$end, $this->session->userdata('member'))->result();
+        $data['pendapatanmuka'] = $this->am->get_cash_flow_acc($cur,34,$start,$end, $this->session->userdata('member'))->result();
+        $data['pendapatanusaha'] = $this->am->get_cash_flow_acc($cur,16,$start,$end, $this->session->userdata('member'))->result();
+        $data['pendapatanusahalain'] = $this->am->get_cash_flow_acc($cur,37,$start,$end, $this->session->userdata('member'))->result();
+        $data['biayausaha'] = $this->am->get_cash_flow_acc($cur,15,$start,$end, $this->session->userdata('member'))->result();
+        $data['biayausahalain'] = $this->am->get_cash_flow_acc($cur,17,$start,$end, $this->session->userdata('member'))->result();
+        $data['biayaadm'] = $this->am->get_cash_flow_acc($cur,19,$start,$end, $this->session->userdata('member'))->result();
         // operating activities
         
         // investment activity
-        $data['biayadimuka'] = $this->am->get_cash_flow_acc($cur,13,$start,$end)->result();
-        $data['investasipanjang'] = $this->am->get_cash_flow_acc($cur,29,$start,$end)->result();
-        $data['hartaberwujud'] = $this->am->get_cash_flow_acc($cur,26,$start,$end)->result();
-        $data['hartatakberwujud'] = $this->am->get_cash_flow_acc($cur,30,$start,$end)->result();
-        $data['hartalain'] = $this->am->get_cash_flow_acc($cur,31,$start,$end)->result();
-        $data['biayanonoperasional'] = $this->am->get_cash_flow_acc($cur,24,$start,$end)->result();
+        $data['biayadimuka'] = $this->am->get_cash_flow_acc($cur,13,$start,$end, $this->session->userdata('member'))->result();
+        $data['investasipanjang'] = $this->am->get_cash_flow_acc($cur,29,$start,$end,$this->session->userdata('member'))->result();
+        $data['hartaberwujud'] = $this->am->get_cash_flow_acc($cur,26,$start,$end,$this->session->userdata('member'))->result();
+        $data['hartatakberwujud'] = $this->am->get_cash_flow_acc($cur,30,$start,$end,$this->session->userdata('member'))->result();
+        $data['hartalain'] = $this->am->get_cash_flow_acc($cur,31,$start,$end,$this->session->userdata('member'))->result();
+        $data['biayanonoperasional'] = $this->am->get_cash_flow_acc($cur,24,$start,$end,$this->session->userdata('member'))->result();
         // investment activity
         
         // financing activity
-        $data['hutangpanjang'] = $this->am->get_cash_flow_acc($cur,35,$start,$end)->result();
-        $data['hutangnonusaha'] = $this->am->get_cash_flow_acc($cur,32,$start,$end)->result();
-        $data['hutanglain'] = $this->am->get_cash_flow_acc($cur,36,$start,$end)->result();
-        $data['modal'] = $this->am->get_cash_flow_acc($cur,22,$start,$end)->result();
-        $data['laba'] = $this->am->get_cash_flow_acc($cur,18,$start,$end)->result();
-        $data['pendapatanluarusaha'] = $this->am->get_cash_flow_acc($cur,21,$start,$end)->result();
-        $data['pengeluaranluarusaha'] = $this->am->get_cash_flow_acc($cur,25,$start,$end)->result();
+        $data['hutangpanjang'] = $this->am->get_cash_flow_acc($cur,35,$start,$end,$this->session->userdata('member'))->result();
+        $data['hutangnonusaha'] = $this->am->get_cash_flow_acc($cur,32,$start,$end,$this->session->userdata('member'))->result();
+        $data['hutanglain'] = $this->am->get_cash_flow_acc($cur,36,$start,$end,$this->session->userdata('member'))->result();
+        $data['modal'] = $this->am->get_cash_flow_acc($cur,22,$start,$end,$this->session->userdata('member'))->result();
+        $data['laba'] = $this->am->get_cash_flow_acc($cur,18,$start,$end,$this->session->userdata('member'))->result();
+        $data['pendapatanluarusaha'] = $this->am->get_cash_flow_acc($cur,21,$start,$end,$this->session->userdata('member'))->result();
+        $data['pengeluaranluarusaha'] = $this->am->get_cash_flow_acc($cur,25,$start,$end,$this->session->userdata('member'))->result();
         // financing activity
          
         if ($file == 0)

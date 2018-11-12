@@ -133,7 +133,7 @@ timein($res->dates)."  ".$res->source_desc."</td>
 		
 		<div style="float:left; width:7.5cm; border:0px solid #000;">
 		    In Words : <small id="terbilang"> <?php echo $terbilang; ?> </small>  
-			<p style="margin:0; padding:5px 0 0 0;"> Description : <?php echo $desc; ?> </p>
+			<p style="margin:0; padding:5px 0 0 0;"> Description : <?php echo $desc; ?> / <?php echo $payment ?> </p>
 			<p style="margin:0; padding:5px 0 0 0;"> Status / Log : <?php echo $approve.'/'.$status.'/'.$log; ?> </p>
 		</div>
 		
