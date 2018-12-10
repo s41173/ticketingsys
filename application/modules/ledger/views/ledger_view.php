@@ -88,7 +88,7 @@ $atts1 = array(
               <!-- xtitle -->
               <div class="x_title">
                 
-               <h2> Account Filter - <?php echo ! empty($accname) ? $accname : ''; ?>     </h2>
+               <h2> Account Filter </h2>
                 
                 <ul class="nav navbar-right panel_toolbox">
                   <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a> </li>

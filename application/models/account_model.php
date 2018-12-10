@@ -14,50 +14,35 @@ class Account_model extends Custom_Model
     protected $com;
     
     
-    function get_account($member=null,$cla=null)
+    function get_account($cla=null)
     {
         $this->db->select('accounts.id, accounts.name, accounts.alias, accounts.code');
         $this->db->from('gls, transactions, accounts');
         $this->db->where('gls.id = transactions.gl_id');
         $this->db->where('transactions.account_id = accounts.id');
         $this->db->where('accounts.classification_id', $cla);
-        $this->db->where('accounts.member_id', $member);
         $this->db->order_by('accounts.code','asc');
         $this->db->distinct();
         return $this->db->get(); 
     }
     
-    function get_all_account($member=null,$cla=null)
+    function get_all_account($cla=null)
     {
         $this->db->select('accounts.id, accounts.name, accounts.alias, accounts.code, classification_id');
         $this->db->from('accounts');
         $this->cek_null($cla, 'classification_id');
-        $this->cek_null($member, 'member_id');
         $this->db->order_by('accounts.code','asc');
         $this->db->distinct();
         return $this->db->get(); 
     }
     
-    function get_account_active($member=null,$cla=null)
-    {
-        $this->db->select('accounts.id, accounts.name, accounts.alias, accounts.code, classification_id');
-        $this->db->from('accounts');
-        $this->cek_null($cla, 'classification_id');
-        $this->cek_null($member, 'member_id');
-        $this->db->where('status', 1);
-        $this->db->order_by('accounts.code','asc');
-        $this->db->distinct();
-        return $this->db->get(); 
-    }
-    
-    function get_cash_group_account($member=null)
+    function get_cash_group_account()
     {
         $group = array('7', '8');
         
         $this->db->select('accounts.id, accounts.name, accounts.alias, accounts.code, classification_id');
         $this->db->from('accounts');
         $this->db->where_in('classification_id', $group);
-        $this->db->where('member_id', $member);
         $this->db->where('status', 1);
         $this->db->order_by('accounts.code','desc');
         $this->db->distinct();
@@ -65,7 +50,7 @@ class Account_model extends Custom_Model
     }
     
     // fungsi untuk mendapatkan akun terkait saldo awal
-    function get_begin_saldo_account($member=0)
+    function get_begin_saldo_account()
     {
         $this->db->select('accounts.id, accounts.currency, accounts.name, accounts.alias, accounts.code, accounts.classification_id');
         $this->db->from('accounts,classifications');
@@ -73,7 +58,6 @@ class Account_model extends Custom_Model
         
         $names = array('harta', 'modal', 'kewajiban');
         $this->db->where_in('classifications.type', $names);
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
         
         $this->db->order_by('accounts.code','asc');
@@ -143,7 +127,7 @@ class Account_model extends Custom_Model
         return $this->db->get(); 
     }
     
-    function get_balance_by_classification($cur='IDR',$cla=null,$month=null,$year=null,$emonth=null,$eyear=null,$member=0)
+    function get_balance_by_classification($cur='IDR',$cla=null,$month=null,$year=null,$emonth=null,$eyear=null)
     {
 //        $this->db->select('accounts.id, gls.id, gls.no, gls.dates, gls.currency, gls.notes, gls.balance,
 //                           transactions.debit, transactions.credit, transactions.vamount, gls.approved');
@@ -163,13 +147,12 @@ class Account_model extends Custom_Model
         $this->db->where('gls.currency', $cur);
         $this->cek_null($cla,"classifications.id");
         $this->db->where('gls.approved', 1);
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
         $res = $this->db->get()->row(); 
         return floatval($res->vamount);
     }
     
-    function get_start_balance_by_classification($cur='IDR',$cla=null,$start=null,$member=0)
+    function get_start_balance_by_classification($cur='IDR',$cla=null,$start=null)
     {
         $this->db->select_sum('transactions.vamount');
         $this->db->select_sum('transactions.debit');
@@ -187,14 +170,13 @@ class Account_model extends Custom_Model
         $this->db->where('gls.currency', $cur);
         $this->cek_null($cla,"classifications.id");
         $this->db->where('gls.approved', 1);
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
 
         $res = $this->db->get()->row(); 
         if ($res){ return floatval($res->vamount);  }else { return 0; }
     }
     
-    function get_begining_balance_classification($cur='IDR',$cla=null,$start=null,$member=0)
+    function get_begining_balance_classification($cur='IDR',$cla=null,$start=null)
     {   
         $this->db->select_sum('balances.beginning');
         
@@ -205,13 +187,12 @@ class Account_model extends Custom_Model
         $this->cek_null($cla,"classifications.id");
         $this->db->where('balances.month', date('n',  strtotime($start)));
         $this->db->where('balances.year', date('Y',  strtotime($start)));
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
         $res = $this->db->get()->row(); 
         return floatval($res->beginning);
     }
     
-    function get_begining_balance_classification_by_month($cur='IDR',$cla=null,$month=null,$year,$member=0)
+    function get_begining_balance_classification_by_month($cur='IDR',$cla=null,$month=null,$year)
     {   
         $this->db->select_sum('balances.beginning');
         
@@ -222,13 +203,12 @@ class Account_model extends Custom_Model
         $this->cek_null($cla,"classifications.id");
         $this->db->where('balances.month', $month);
         $this->db->where('balances.year', $year);
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
         $res = $this->db->get()->row(); 
         return floatval($res->beginning);
     }
     
-    function get_end_balance_classification($cur='IDR',$cla=null,$month=null,$year=null,$member=0)
+    function get_end_balance_classification($cur='IDR',$cla=null,$month=null,$year=null)
     {   
         $this->db->select_sum('balances.end');
         
@@ -239,41 +219,36 @@ class Account_model extends Custom_Model
         $this->cek_null($cla,"classifications.id");
         $this->db->where('balances.month', $month);
         $this->db->where('balances.year', $year);
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
         $res = $this->db->get()->row(); 
         return floatval($res->end);
     }
     
-    function get_start_balance($cur='IDR',$acc=null,$month=null,$year=null,$member=0)
+    function get_start_balance($cur='IDR',$acc=null,$month=null,$year=null)
     {   
         $this->db->select_sum('balances.beginning');
         
-        $this->db->from('balances,accounts');
-        $this->db->where('balances.account_id = accounts.id');
+        $this->db->from('balances');
         $this->db->where('balances.account_id', $acc);
         $this->db->where('balances.month', $month);
         $this->db->where('balances.year', $year);
-        $this->db->where('accounts.member_id', $member);
         $res = $this->db->get()->row(); 
         return floatval($res->beginning);
     }
     
-    function get_end_balance($cur='IDR',$acc=null,$month=null,$year=null,$member=0)
+    function get_end_balance($cur='IDR',$acc=null,$month=null,$year=null)
     {   
         $this->db->select_sum('balances.end');
         
-        $this->db->from('balances,accounts');
-        $this->db->where('balances.account_id = accounts.id');
+        $this->db->from('balances');
         $this->db->where('balances.account_id', $acc);
         $this->db->where('balances.month', $month);
         $this->db->where('balances.year', $year);
-        $this->db->where('accounts.member_id', $member);
         $res = $this->db->get()->row(); 
         return floatval($res->end);
     }
     
-    function get_cash_flow_acc($cur='IDR',$cla=null,$start=null,$end=null,$member=0)
+    function get_cash_flow_acc($cur='IDR',$cla=null,$start=null,$end=null)
     {
         $this->db->select('accounts.id, accounts.name, accounts.code, accounts.classification_id');
         $this->db->from('gls, transactions, accounts, classifications');
@@ -286,7 +261,6 @@ class Account_model extends Custom_Model
         $this->db->where('accounts.classification_id',$cla);
         $this->db->where('gls.approved', 1);
         $this->db->where('gls.cf', 1);
-        $this->db->where('accounts.member_id', $member);
         $this->db->where('accounts.deleted', NULL);
         $this->db->distinct();
         return $this->db->get(); 

@@ -7,6 +7,8 @@ class Configuration extends MX_Controller
         parent::__construct();
         
         $this->load->model('Configuration_model', '', TRUE);
+
+        $this->properti = $this->property->get();
         $this->acl->otentikasi();
 
         $this->modul = $this->components->get(strtolower(get_class($this)));
@@ -14,11 +16,9 @@ class Configuration extends MX_Controller
         $this->role = new Role_lib();
         $this->city = new City_lib();
         $this->period = new Period_lib();
-        $this->member = new Member_lib();
-        $this->member = $this->member->get($this->session->userdata('member'));
     }
 
-    private $member, $modul, $title;
+    private $properti, $modul, $title;
     private $role,$city,$period;
 
     function index()

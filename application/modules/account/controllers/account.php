@@ -38,14 +38,14 @@ class Account extends MX_Controller
         
     public function getdatatable($search=null,$class='null',$publish='null')
     {
-        if(!$search){ $result = $this->Model->get_last($this->session->userdata('member'),$this->modul['limit'])->result(); }
-        else {$result = $this->Model->search($this->session->userdata('member'),$class,$publish)->result(); }
+        if(!$search){ $result = $this->Model->get_last($this->modul['limit'])->result(); }
+        else {$result = $this->Model->search($class,$publish)->result(); }
         
         if ($result){
 	foreach($result as $res)
 	{  
-	   $output[] = array ($res->id, $this->classification->get_name($res->classification_id), $this->classification->get_type($res->classification_id), strtoupper($res->currency), $res->code, $res->name, $res->alias, $res->acc_no,
-                              $res->bank, $res->status, $res->defaults, $res->bank_stts);
+	   $output[] = array ($res->id, $this->classification->get_name($res->classification_id), $this->classification->get_type($res->classification_id), $res->currency, $res->code, $res->name, $res->alias, $res->acc_no,
+                              $res->bank, $res->status, $res->default, $res->bank_stts);
 	}
             $this->output
             ->set_status_header(200)
@@ -206,7 +206,7 @@ class Account extends MX_Controller
         
         $class = $this->input->post('cclassification');
 
-        $accounts = $this->Model->get_list($this->session->userdata('member'),$class)->result();
+        $accounts = $this->Model->get_list($class)->result();
 
         $tmpl = array('table_open' => '<table id="myTable" class="acctable table table-hover">');
 
@@ -229,7 +229,7 @@ class Account extends MX_Controller
 
             $this->table->add_row
             (
-                ++$i, $account->code, $account->name, strtoupper($account->currency),
+                ++$i, $account->code, $account->name, $account->currency,
                 form_button($datax)
             );
         }
@@ -278,10 +278,9 @@ class Account extends MX_Controller
         if ( $this->journal->valid_account_transaction($uid) == TRUE && $this->valid_default($uid) == TRUE )
         {
             // hapus balance
-            if ($this->balance->remove_balance($uid) == true){
-              $this->Model->delete($uid);    
-              echo "true|1 $this->title successfully soft removed..!";
-            }
+            $this->balance->remove_balance($uid);
+            $this->Model->delete($uid);
+            echo "true|1 $this->title successfully soft removed..!";
         }
         else{ echo  "invalid|$this->title related to another component..!"; }
         
@@ -304,15 +303,15 @@ class Account extends MX_Controller
             if ($this->input->post('cclassification') == 7 || $this->input->post('cclassification') == 8){ $bank = 1; }
             else { $bank  = $this->input->post('cbank'); }
             
-            $account = array('member_id' => $this->session->userdata('member'), 'classification_id' => $this->input->post('cclassification'), 'currency' => $this->input->post('ccurrency'),
+            $account = array('classification_id' => $this->input->post('cclassification'), 'currency' => $this->input->post('ccurrency'),
                              'code' => $this->input->post('tcode').'-'.$this->input->post('tno'), 'name' => $this->input->post('tname'),
                              'alias' => $this->input->post('talias'), 'status' => $this->input->post('cactive'), 'bank_stts' => $bank,
                              'created' => date('Y-m-d H:i:s'));
             
-            if ( $this->Model->add($account) == true ){
-                $this->create_balance($this->input->post('tcode').'-'.$this->input->post('tno'));                
-                echo 'true|'.$this->title.' successfully saved..!';
-            }
+            $this->Model->add($account);
+            $this->create_balance($this->input->post('tno').'-'.$this->input->post('tcode'));
+
+            echo 'true|'.$this->title.' successfully saved..!';
         }
         else{ echo "error|".validation_errors(); }
         }else { echo "error|Sorry, you do not have the right to edit $this->title component..!"; }
@@ -321,8 +320,8 @@ class Account extends MX_Controller
     
     private function create_balance($code=null)
     {
-        $ps = $this->period->get($this->session->userdata('member'));
-        $accid = $this->account->get_id_code($this->session->userdata('member'),$code);
+        $ps = $this->period->get();
+        $accid = $this->account->get_id_code($code);
         $this->balance->create($accid, $ps->month, $ps->year, 0, 0);
     }
 

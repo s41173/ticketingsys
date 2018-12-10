@@ -38,8 +38,7 @@
 |
 */
 
-$route['main'] = 'report_reference';
-$route['default_controller'] = "report_reference";
+$route['default_controller'] = "main";
 $route['404_override'] = '';
 
 

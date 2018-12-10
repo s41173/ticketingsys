@@ -126,15 +126,18 @@ class Login extends MX_Controller {
                 $userid = $this->Login_model->get_userid($username);
                 $role = $this->Login_model->get_role($username);
                 $rules = $this->Login_model->get_rules($role);
-                $member = $this->Login_model->get_member($username);
+                $branch = $this->Login_model->get_branch($username);
                 $logid = $this->log->max_log();
                 $waktu = tgleng(date('Y-m-d')).' - '.waktuindo().' WIB';
 
                 $this->log->insert($userid, $this->date, $this->time, 'login');
                 $this->login->add($userid, $logid);
 
-                $data = array('username' => $username, 'userid' => $userid, 'role' => $role, 'member' => $member, 'rules' => $rules, 'log' => $logid, 'login' => TRUE, 'waktu' => $waktu);
+                $data = array('username' => $username, 'userid' => $userid, 'role' => $role, 'rules' => $rules, 'log' => $logid, 'login' => TRUE, 'waktu' => $waktu);
                 $this->session->set_userdata($data);
+                
+                // create branch
+                if ($branch){ $this->session->set_userdata('branch', $branch); }
                 
                 $response = array(
                   'Success' => true,

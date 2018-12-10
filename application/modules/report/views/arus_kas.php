@@ -174,16 +174,16 @@
 		return $result;
 	}
 	
-	function get_begin_balance($cur='IDR',$start,$member=0)
+	function get_begin_balance($cur='IDR',$start)
 	{
-		$bl = new Balances();
+		$bl = new Balance();
 		$am = new Account_model();
-		$start_kas = $am->get_start_balance_by_classification($cur,7,$start,$member);
-		$start_bank = $am->get_start_balance_by_classification($cur,8,$start,$member);
+		$start_kas = $am->get_start_balance_by_classification($cur,7,$start);
+		$start_bank = $am->get_start_balance_by_classification($cur,8,$start);
 		$start_saldo = floatval($start_kas + $start_bank);
 		
-		$beginning_kas = $am->get_begining_balance_classification($cur,7,$start,$member);
-		$beginning_bank = $am->get_begining_balance_classification($cur,8,$start,$member);
+		$beginning_kas = $am->get_begining_balance_classification($cur,7,$start);
+		$beginning_bank = $am->get_begining_balance_classification($cur,8,$start);
 		$beginning_saldo = floatval($beginning_kas + $beginning_bank);
 		return $start_saldo + $beginning_saldo;	
 		return $beginning_bank;
@@ -202,7 +202,7 @@
 <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
 </tr>
 <tr style="height:24px">
-<td colspan="26" rowspan="2" class="s3"> <?php echo isset($company) ? $company : ''; ?>  </td>
+<td colspan="26" rowspan="2" class="s3"> <?php echo isset($company) ? $company : ''; ?> </td>
 </tr>
 <tr style="height:2px">
 </tr>
@@ -1009,7 +1009,7 @@
 <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
 </tr>
 <tr style="height:17px">
-<td></td><td></td><td></td><td colspan="7" class="s5">Saldo Awal:</td><td></td><td></td><td colspan="6" rowspan="2" class="s5">Rp</td><td></td><td colspan="5" rowspan="3" class="s10"> <?php echo num_format(get_begin_balance($cur,$start,$this->session->userdata('member'))); ?> </td><td></td><td></td>
+<td></td><td></td><td></td><td colspan="7" class="s5">Saldo Awal:</td><td></td><td></td><td colspan="6" rowspan="2" class="s5">Rp</td><td></td><td colspan="5" rowspan="3" class="s10"> <?php echo num_format(get_begin_balance($cur,$start)); ?> </td><td></td><td></td>
 </tr>
 <tr style="height:2px">
 <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
@@ -1022,7 +1022,7 @@
 </tr>
 
 <tr style="height:6px">
-<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td colspan="5" rowspan="3" class="s11"> <?php echo num_format(get_begin_balance($cur,$start,$this->session->userdata('member')) + $tot_flow); ?> </td><td></td><td></td>
+<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td colspan="5" rowspan="3" class="s11"> <?php echo num_format(get_begin_balance($cur,$start) + $tot_flow); ?> </td><td></td><td></td>
 </tr>
 <tr style="height:18px">
 <td></td><td></td><td></td><td colspan="7" class="s5">Saldo Akhir:</td><td></td><td></td><td colspan="6" class="s5">Rp</td><td></td><td></td><td></td>

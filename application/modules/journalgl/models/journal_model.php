@@ -11,24 +11,28 @@ class Journal_model extends Custom_Model
         $this->tableName = 'gls';
     }
     
-    protected $field = array('id', 'member_id', 'no', 'dates', 'code', 'currency', 'docno', 'notes', 'balance', 'desc', 'log', 'cf', 'approved');
-        
-    function get_last($member=0, $limit, $offset=null)
+    protected $field = array('id', 'no', 'dates', 'code', 'currency', 'docno', 'notes', 'balance', 'desc', 'log', 'cf', 'approved');
+    
+//    function count()
+//    {
+//        //method untuk mengembalikan nilai jumlah baris dari database.
+//        return $this->db->count_all($this->table);
+//    }
+    
+    function get_last($limit, $offset=null)
     {
         $this->db->select($this->field);
         $this->db->from($this->tableName); 
-        $this->db->where('member_id', $member);
         $this->db->where('deleted', $this->deleted);
         $this->db->order_by('id', 'desc'); 
         $this->db->limit($limit, $offset);
         return $this->db->get(); 
     }
 
-    function search($member=0,$code=null,$no=null,$dates=null)
+    function search($code=null,$no=null,$dates=null)
     {
         $this->db->select($this->field);
         $this->db->from($this->tableName);
-        $this->db->where('member_id', $member);
         $this->cek_null_string($code, 'code');
         $this->cek_null_string($no, 'no');
         $this->cek_null_string(picker_split2($dates), 'dates');
@@ -36,11 +40,10 @@ class Journal_model extends Custom_Model
         return $this->db->get(); 
     }
     
-    function report($member=0, $cur=null,$type=null,$start=null,$end=null)
+    function report($cur=null,$type=null,$start=null,$end=null)
     {
         $this->db->select($this->field);
         $this->db->from($this->tableName);
-        $this->db->where('member_id', $member);
         $this->cek_null($cur, 'currency');
         $this->cek_null($type, 'code');
         $this->between('dates', $start, $end);

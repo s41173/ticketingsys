@@ -13,27 +13,24 @@ class Account_model extends Custom_Model
         $this->tableName = 'accounts';
     }
     
-    protected $field = array('id', 'member_id', 'classification_id', 'currency', 'code', 'name', 'alias', 'acc_no', 'bank',
-                             'city', 'phone', 'zip', 'contact', 'fax', 'balance_phone',
-                             'status', 'defaults', 'bank_stts', 'created', 'updated', 'deleted');
+    protected $field = array('id', 'classification_id', 'currency', 'code', 'name', 'alias', 'acc_no', 'bank', 
+                             'status', 'default', 'bank_stts', 'created', 'updated', 'deleted');
     protected $com;
     
-    function get_last($member=0, $limit, $offset=null)
+    function get_last($limit, $offset=null)
     {
         $this->db->select($this->field);
         $this->db->from($this->tableName); 
-        $this->db->where('member_id', $member);
         $this->db->where('deleted', $this->deleted);
         $this->db->order_by('id', 'desc'); 
         $this->db->limit($limit, $offset);
         return $this->db->get(); 
     }
     
-    function get_list($member=0,$clas=null)
+    function get_list($clas=null)
     {
         $this->db->select($this->field);
         $this->db->from($this->tableName); 
-        $this->db->where('member_id', $member);
         $this->db->where('deleted', $this->deleted);
         $this->cek_null($clas, 'classification_id');
         $this->cek_null_string(1, 'status');
@@ -41,12 +38,11 @@ class Account_model extends Custom_Model
         return $this->db->get(); 
     }
     
-    function search($member=0, $clas=null,$publish=null)
+    function search($clas=null,$publish=null)
     {   
         $this->db->select($this->field);
         $this->db->from($this->tableName); 
         $this->db->where('deleted', $this->deleted);
-        $this->db->where('member_id', $member);
         $this->cek_null_string($clas, 'classification_id');
         $this->cek_null_string($publish, 'status');
         
@@ -58,13 +54,12 @@ class Account_model extends Custom_Model
     {
         $this->db->where('id', $uid);
         $query = $this->db->get($this->tableName)->row();
-        if($query->defaults == 1){ return FALSE; }else{ return TRUE; }
+        if($query->default == 1){ return FALSE; }else{ return TRUE; }
     }
     
-    function report($member=0,$cur=null,$stts=null,$cla=null)
+    function report($cur=null,$stts=null,$cla=null)
     {
         $this->db->select('id, classification_id, currency, code, name, alias, status');
-        $this->db->where('member_id', $member);
         $this->cek_null($cur, 'currency');
         $this->cek_null($stts, 'status');
         $this->cek_null($cla, 'classification_id');

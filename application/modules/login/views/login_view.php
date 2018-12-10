@@ -130,7 +130,7 @@ $(document).ready(function (e) {
             <button type="button" id="loginbutton">Login&nbsp;&nbsp;<i class="fa fa-arrow-circle-o-right"></i></button>
             <button type="reset" class="fr" style="margin-bottom:15px; ">Cancel&nbsp;&nbsp;<i class="fa fa-undo"></i></button>
             <p style="margin:5px 0 0 0; float:left;"> <a id="forgot" href="<?php echo site_url('login/forgot'); ?>"> [ Forgot Password ] </a> </p>
-            <p>&copy; Copyrights <a id="brand" href="http://dswip.com" target="_blank"> <?php echo $pname.'&nbsp; - '.date('Y'); ?> </a> <br> All rights reserved.</p>
+            <p>&copy; Copyrights <a id="brand" href="http://dswip.com" target="_blank"> <?php echo $pname.'&nbsp;'.date('Y'); ?> </a> <br> All rights reserved.</p>
         </div>
 
     </div>

@@ -404,7 +404,7 @@ class Sales extends MX_Controller
         $cost = $sales->cost;
         
         // total        
-        $transaction = array('tax' => $totals['tax'], 'total' => $price, 'discount' => $totals['discount'], 
+        $transaction = array('tax' => intval($totals['tax']), 'total' => intval($price), 'discount' => intval($totals['discount']), 
                              'amount' => intval($totals['amount']+$cost), 'cost' => $cost);
 	$this->Sales_model->update($sid, $transaction);
     }
@@ -600,6 +600,7 @@ class Sales extends MX_Controller
             if ($this->input->post('cpayment') == 5){ $acc = $this->input->post('caccount');}else{ $acc = 0; }
             
             $sales = array('cust_id' => $this->input->post('ccustomer'), 'dates' => $this->input->post('tdates'),
+                           'tax' => 0,
                            'cost' => $this->input->post('tcosts'), 'code' => $this->input->post('tcode'), 'account' => $acc,
                            'due_date' => $this->input->post('tduedates'), 'payment_id' => $this->input->post('cpayment'),
                            'log' => $this->session->userdata('log'));

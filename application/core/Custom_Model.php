@@ -209,7 +209,7 @@ class Custom_Model extends CI_Model {
     {
         $val = array('deleted' => date('Y-m-d H:i:s'));
         $this->db->where('id', $uid);
-        return $this->db->update($this->tableName, $val);
+        $this->db->update($this->tableName, $val);
         
         $this->logs->insert($this->session->userdata('userid'), date('Y-m-d'), waktuindo(), 'delete', $this->com);
     }
@@ -224,7 +224,7 @@ class Custom_Model extends CI_Model {
     
     function add($users)
     {
-        return $this->db->insert($this->tableName, $users);
+        $this->db->insert($this->tableName, $users);
         $this->logs->insert($this->session->userdata('userid'), date('Y-m-d'), waktuindo(), 'create', $this->com);
     }
     

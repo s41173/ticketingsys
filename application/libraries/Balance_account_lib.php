@@ -95,7 +95,7 @@ class Balance_account_lib extends Custom_Model {
     function remove_balance($acc)
     {
        $this->db->where('account_id',$acc); 
-       return $this->db->delete($this->tableName);
+       $this->db->delete($this->tableName);
     }
     
     function get($acc,$month,$year)

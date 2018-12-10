@@ -209,6 +209,7 @@ class Customer extends MX_Controller
                 $data['error'] = $this->upload->display_errors();
                 $customer = array('first_name' => strtolower($this->input->post('tfname')), 
                                   'last_name' => strtolower($this->input->post('tlname')),
+                                  'fax' => '0', 'notes' => '', 'status' => '0',
                                   'type' => $this->input->post('ctype'), 'address' => $this->input->post('taddress'),
                                   'shipping_address' => $this->input->post('taddress'), 'phone1' => $this->input->post('tphone1'), 'phone2' => $this->input->post('tphone2'),
                                   'email' => $this->input->post('temail'), 'password' => 'password', 
@@ -223,6 +224,7 @@ class Customer extends MX_Controller
                 
                 $customer = array('first_name' => strtolower($this->input->post('tfname')), 
                                   'last_name' => strtolower($this->input->post('tlname')),
+                                  'fax' => '0', 'notes' => '', 'status' => '0',
                                   'type' => $this->input->post('ctype'), 'address' => $this->input->post('taddress'),
                                   'shipping_address' => $this->input->post('taddress'), 'phone1' => $this->input->post('tphone1'), 'phone2' => $this->input->post('tphone2'),
                                   'email' => $this->input->post('temail'), 'password' => 'password', 
@@ -536,6 +538,7 @@ class Customer extends MX_Controller
 
                 $customer = array('first_name' => strtolower($this->input->post('tfname')), 
                               'last_name' => strtolower($this->input->post('tlname')),
+                              'fax' => '0', 'notes' => '', 'status' => '0',
                               'type' => $this->input->post('ctype'), 'address' => $this->input->post('taddress'),
                               'shipping_address' => $this->input->post('tshipping'), 'phone1' => $this->input->post('tphone1'), 'phone2' => $this->input->post('tphone2'),
                               'email' => $this->input->post('temail'), 'password' => 'password', 
@@ -550,6 +553,7 @@ class Customer extends MX_Controller
 
                 $customer = array('first_name' => strtolower($this->input->post('tfname')), 
                               'last_name' => strtolower($this->input->post('tlname')),
+                              'fax' => '0', 'notes' => '', 'status' => '0',
                               'type' => $this->input->post('ctype'), 'address' => $this->input->post('taddress'),
                               'shipping_address' => $this->input->post('tshipping'), 'phone1' => $this->input->post('tphone1'), 'phone2' => $this->input->post('tphone2'),
                               'email' => $this->input->post('temail'), 'password' => 'password', 

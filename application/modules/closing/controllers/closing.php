@@ -14,12 +14,15 @@ class Closing extends MX_Controller
         $this->title = strtolower(get_class($this));
 
         $this->load->library('currency_lib');
+        $this->product = new Product_lib();
         $this->user = $this->load->library('admin_lib');
+//        $this->sales = $this->load->library('sales');
         $this->journal = new Journalgl_lib();
         $this->component = new Components();
-        $this->period = new Period_lib();
-        $this->period = $this->period->get($this->session->userdata('member'));
+        $this->period = new Period();
+        $this->period = $this->period->get();
         $this->balancelib = new Balance_account_lib();
+
     }
 
     private $atts = array('width'=> '800','height'=> '600',
@@ -149,80 +152,89 @@ class Closing extends MX_Controller
 
     function calculate($page=null)
     {
-         try {
-            $this->load->model('Account_model', 'am', TRUE);
-
-            $bl = new Balances();
-            $accounts = $this->am->get_account_active($this->session->userdata('member'))->result(); 
-
-            $res = null;
-            $next = $this->next_period();  
-
-          foreach ($accounts as $account)
-          {    
-             $res_trans = $this->am->get_balance($account->id, $this->period->month,$this->period->year)->row_array(); 
-             $res_trans = floatval($res_trans['vamount']);
-
-             $bl->where('month', $this->period->month);
-             $bl->where('year', $this->period->year);
-             $bl->where('account_id', $account->id)->get();
-             $res1 = floatval($bl->beginning + $res_trans + $bl->vamount);
-
-             $this->balancelib->create($account->id, $this->period->month, $this->period->year, floatval($bl->beginning), $res1); // create end saldo this month
-             $this->balancelib->create($account->id, $next[0], $next[1], $res1, 0); // create beginning saldo next month
-             $bl->clear();               
-          }
+        $this->load->model('Account_model', 'am', TRUE);
         
-          $this->session->set_flashdata('message', "Calculating Ending Balance Sucessed..!");
-          redirect($page);       
+        $accounts = new Accounts();
+        $ps = new Period();
+        $bl = new Balances();
+        $accounts->get();
+        $ps->get();
+        
+        $res = null;
+        $next = $this->next_period();  
+        
+        foreach ($accounts as $account)
+        {    
+           // tambahkan sebuah fungsi untuk hitung laba tahun berjalan 
+//           if ($account->id == 21 || $account->id == 22)
+//           {
+
+            $res_trans = $this->am->get_balance($account->id,$ps->month,$ps->year)->row_array(); 
+            $res_trans = floatval($res_trans['vamount']);
+
+            $bl->where('month', $ps->month);
+            $bl->where('year', $ps->year);
+            $bl->where('account_id', $account->id)->get();
+            $res1 = floatval($bl->beginning + $res_trans + $bl->vamount);
+
+            $this->balancelib->create($account->id, $ps->month, $ps->year, floatval($bl->beginning), $res1); // create end saldo this month
+            $this->balancelib->create($account->id, $next[0], $next[1], $res1, 0); // create beginning saldo next month
+            $bl->clear();               
         }
-        catch (customException $e) {
-          //display custom message
-          echo $e->errorMessage();
-        } 
+        
+        $this->session->set_flashdata('message', "Calculating Ending Balance Sucessed..!");
+        redirect($page);    
     }
     
     function monthly()
     {
-        try {
         $this->load->model('Account_model', 'am', TRUE);
-        $bl = new Balances();
         
-        $accounts = $this->am->get_account_active($this->session->userdata('member'))->result(); 
+        $accounts = new Accounts();
+        $ps = new Period();
+        $bl = new Balances();
+        $accounts->get();
+        $ps->get();
+        
         $res = null;
         foreach ($accounts as $account)
         {    
             $next = $this->next_period();  
 
-            $res_trans = $this->am->get_balance($account->id,$this->period->month,$this->period->year)->row_array(); 
+            $res_trans = $this->am->get_balance($account->id,$ps->month,$ps->year)->row_array(); 
             $res_trans = floatval($res_trans['vamount']);
 
-            $bl->where('month', $this->period->month);
-            $bl->where('year', $this->period->year);
+            $bl->where('month', $ps->month);
+            $bl->where('year', $ps->year);
             $bl->where('account_id', $account->id)->get();
             $res1 = floatval($bl->beginning + $bl->vamount + $res_trans);
+//            $res1 = floatval($bl->beginning + $res_trans);
 
-            $this->balancelib->create($account->id, $this->period->month, $this->period->year, floatval($bl->beginning), $res1); // create end saldo this month
+            $this->balancelib->create($account->id, $ps->month, $ps->year, floatval($bl->beginning), $res1); // create end saldo this month
             $this->balancelib->create($account->id, $next[0], $next[1], $res1, 0); // create beginning saldo next month
             $bl->clear();               
         }
-         // update periode akuntansi
-         $ps = new Period_lib();
-         $periode = array('month' => $next[0], 'year' => $next[1]);
-         $ps->update_period($this->period->id,$periode);
+        
+        // update ledger stock
+        $stock = new Stock_ledger_lib();
+        $stock->closing();
+
+//          update periode akuntansi
+         $ps->month = $next[0];
+         $ps->year = $next[1];
+         $ps->save();
 
          $this->session->set_flashdata('message', "Monthly End Sucessed..!");
-         redirect('main');   
-        }catch (customException $e) {
-          //display custom message
-          echo $e->errorMessage();
-        } 
+         redirect('main');    
     }
     
     private function next_period()
-    {        
-        $month = $this->period->month;
-        $year = $this->period->year;
+    {
+        $ps = new Period();
+        $ps = $ps->get();
+        
+        $month = $ps->month;
+        $year = $ps->year;
         
         if ($month == 12){$nmonth = 1;}else { $nmonth = $month +1; }
         if ($month == 12){ $nyear = $year+1; }else{ $nyear = $year; }
@@ -232,7 +244,9 @@ class Closing extends MX_Controller
     
     function annual()
     {
-       if ($this->period->month == $this->period->closing_month){ $this->annual_process(); }
+       $ps = new Period();
+       $ps->get();
+       if ($ps->month == $ps->closing_month){ $this->annual_process(); }
        else {$this->session->set_flashdata('message', "Annual Closing Rollback - Invalid Period..!");  } 
        redirect('main');
     }
@@ -240,30 +254,36 @@ class Closing extends MX_Controller
     private function annual_process()
     {
         $this->load->model('Account_model', 'am', TRUE);
-        $accounts = $this->am->get_account_active($this->session->userdata('member'))->result(); 
+        
+        $accounts = new Accounts();
+        $ps = new Period();
+        $bl = new Balances();
+        $accounts->get();
+        $ps->get();
         
         $res = null;
-        $bl = new Balances();
-        $next = $this->next_period();
-        
         foreach ($accounts as $account)
         {    
            if ($account->id == 21)
            {
-              $bl->where('month', $this->period->month);
-              $bl->where('year', $this->period->year);
+              $bl = new Balances();
+              $bl->where('month', $ps->month);
+              $bl->where('year', $ps->year);
               $bl->where('account_id', $account->id)->get();
               
-              $res_trans = $this->am->get_balance($account->id,$this->period->month,$this->period->year)->row_array();
+              $res_trans = $this->am->get_balance($account->id,$ps->month,$ps->year)->row_array(); 
               $res_trans = floatval($res_trans['vamount']);
               
-              $res1 = floatval($bl->beginning+$res_trans);
+              $res1 = $bl->beginning + $res_trans;
               
               // memindahkan saldo awal + vamount menjadi end saldo
-              $this->balancelib->create($account->id, $this->period->month, $this->period->year, $bl->beginning, $res1);
+              $this->balancelib->create($account->id, $ps->month, $ps->year, $bl->beginning, $res1);
               
               // memindai nilai laba tahun berjalan ke akun laba di tahan
               $bl->clear();
+              $bl = new Balances();
+              
+              $next = $this->next_period();
               
               $bl->account_id = 22;
               $bl->beginning  = $res1;
@@ -284,23 +304,24 @@ class Closing extends MX_Controller
               $bl->year       = $next[1];
               
               $this->balancelib->create($account->id, $next[0], $next[1], 0, 0);
+              
            } 
            elseif ($account->id != 21 && $account->id != 22)
            {
-              $res = $this->am->get_balance($account->id,$this->period->month,$this->period->year)->row_array();
+              $res = $this->am->get_balance($account->id,$ps->month,$ps->year)->row_array();
 
-              $bl->where('month', $this->period->month);
-              $bl->where('year', $this->period->year);
+              $bl->where('month', $ps->month);
+              $bl->where('year', $ps->year);
               $bl->where('account_id', $account->id)->get();
-              $res = floatval($res['vamount']) + floatval($bl->beginning) + floatval($bl->vamount);
+              $res = floatval($res['vamount']) + floatval($bl->beginning) + floatval($bl->vamount); // saldo akhir bulan ini
 
               // update end saldo bulan ini
-//            $bl->end = $res;
-//            $bl->save();
+//              $bl->end = $res;
+//              $bl->save();
               
-              $this->balancelib->create($account->id, $this->period->month, $this->period->year, $bl->beginning, $res); 
+              $this->balancelib->create($account->id, $ps->month, $ps->year, $bl->beginning, $res); 
 
-//            tambah nilai awal saldo bulan depan
+              // tambah nilai awal saldo bulan depan
               $bl->clear();
               $bl = new Balances();
               $bl->account_id = $account->id;
@@ -308,19 +329,26 @@ class Closing extends MX_Controller
               $bl->end        = 0;
               $bl->month      = $next[0];
               $bl->year       = $next[1];
-//            $bl->save();
+//              $bl->save();  
               
               $this->balancelib->create($account->id, $next[0], $next[1], $res, 0); 
            }
-        }
-         
-        // update periode akuntansi
-        $ps = new Period_lib();
-        $periode = array('month' => $next[0], 'year' => $next[1]);
-        $ps->update_period($this->period->id,$periode);
+           
+         }
 
-        $this->session->set_flashdata('message', "Annual Closing Sucessed..!");
-        redirect('main');
+          // closing jumlah siswa bulan ini
+         
+         // update ledger stock
+          $stock = new Stock_ledger_lib();
+          $stock->closing();
+
+          // update periode akuntansi
+          $ps->month = $next[0];
+          $ps->year = $next[1];
+          $ps->save();
+
+          $this->session->set_flashdata('message', "Annual Closing Sucessed..!");
+          redirect('main');
     }
     
                 // ====================================== CLOSING ======================================

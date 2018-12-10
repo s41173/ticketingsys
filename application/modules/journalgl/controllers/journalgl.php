@@ -32,20 +32,20 @@ class Journalgl extends MX_Controller
 
     function index()
     {
-       $this->session->unset_userdata('jid');
+        $this->session->unset_userdata('jid');
        $this->ledger->set_profit_loss(); 
        $this->get_last();
     }
     
     public function getdatatable($search=null,$code='null',$no='null',$dates='null')
     {
-        if(!$search){ $result = $this->jm->get_last($this->session->userdata('member'),$this->modul['limit'])->result(); }
-        else {$result = $this->jm->search($this->session->userdata('member'),$code,$no,$dates)->result(); }
+        if(!$search){ $result = $this->jm->get_last($this->modul['limit'])->result(); }
+        else {$result = $this->jm->search($code,$no,$dates)->result(); }
         
         if ($result){
 	foreach($result as $res)
 	{  
-	   $output[] = array ($res->id, $res->no, $res->code, tglin($res->dates), strtoupper($res->currency), $res->notes, idr_format($res->balance), $res->approved);
+	   $output[] = array ($res->id, $res->no, $res->code, tglin($res->dates), $res->currency, $res->notes, idr_format($res->balance), $res->approved);
 	}
             $this->output
             ->set_status_header(200)
@@ -308,11 +308,10 @@ class Journalgl extends MX_Controller
 
         if ($this->form_validation->run($this) == TRUE)
         {
-            $this->model->member_id = $this->session->userdata('member');
-            $this->model->no        = $this->input->post('tno');
+            $this->model->no       = $this->input->post('tno');
             $this->model->code     = $this->input->post('ctype');
             $this->model->dates    = $this->input->post('tdate');
-            $this->model->currency = strtoupper($this->input->post('ccurrency'));
+            $this->model->currency = $this->input->post('ccurrency');
             $this->model->docno    = $this->input->post('tdocno');
             $this->model->notes    = $this->input->post('tnote');
             $this->model->desc     = $this->input->post('tdesc');
@@ -383,10 +382,10 @@ class Journalgl extends MX_Controller
             if ($this->form_validation->run($this) == TRUE && $this->valid_confirmation($jid) == TRUE)
             {
                 $this->mitem->gl_id = $jid;
-                $this->mitem->account_id = $this->account->get_id_code($this->session->userdata('member'),$this->input->post('titem'));
+                $this->mitem->account_id = $this->account->get_id_code($this->input->post('titem'));
                 $this->mitem->debit = $this->input->post('tdebit');
                 $this->mitem->credit = $this->input->post('tcredit');
-                $this->mitem->vamount = $this->calculate_vamount($this->account->get_id_code($this->session->userdata('member'),$this->input->post('titem')), $this->input->post('tdebit'), $this->input->post('tcredit'));
+                $this->mitem->vamount = $this->calculate_vamount($this->account->get_id_code($this->input->post('titem')), $this->input->post('tdebit'), $this->input->post('tcredit'));
 
                 $this->mitem->save();
                 $this->update_trans($jid);
@@ -526,7 +525,6 @@ class Journalgl extends MX_Controller
 
     public function valid_no($no)
     {
-        $this->model->where('member_id', $this->session->userdata('member'));
         $this->model->where('code', 'GJ');
         $val = $this->model->where('no', $no)->count();
         if ($val > 0)
@@ -585,7 +583,6 @@ class Journalgl extends MX_Controller
    {
         $this->acl->otentikasi1($this->title);
 
-        $this->model->where('member_id', $this->session->userdata('member'));
         $this->model->where('code', $code);
         $journal = $this->model->where('no', $no)->get();
 
@@ -637,7 +634,7 @@ class Journalgl extends MX_Controller
 //        Property Details
         $data['company'] = $this->properti['name'];
         
-        $data['journals'] = $this->jm->report($this->session->userdata('member'),$cur,$journal,$start,$end)->result();
+        $data['journals'] = $this->jm->report($cur,$journal,$start,$end)->result();
         $this->load->view('journal_report', $data); 
         
     }
